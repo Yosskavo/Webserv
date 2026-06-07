@@ -90,11 +90,13 @@ int		ft_resv(int	fd, std::string &s, int flags)
 	i = recv(fd, &c, 1023, flags);
 	if (i == -1)
 	{
-		throw std::runtime_error("Recv failed");
+		// throw std::runtime_error("Recv failed");
+		perror("recv");
+		return (0);
 	}
 	if (i == 0)
 		return (0);
-	c[1023] = '\0';
+	c[i] = '\0';
 	s += c;
 	pos = s.find("\r\n\r\n");
 	if (pos == std::string::npos)
@@ -103,14 +105,15 @@ int		ft_resv(int	fd, std::string &s, int flags)
 	}
 	else {
 		tmp = s.substr(0, pos + 4);
-		tmp = s.erase(0, pos + 4);
 		std::cout << "--- the full data from client " << fd << " --- \n" << "The Http \n" << tmp << std::endl;
+		s.erase(0, pos + 4);
 	}
 	return (1);
 }
 
 struct pollfd *ft_erase(size_t pos, struct pollfd *fd, size_t &size)
 {
+	int j = 0;
 	if (pos > size)
 		return (fd);
 	close(fd[pos].fd);
@@ -121,9 +124,10 @@ struct pollfd *ft_erase(size_t pos, struct pollfd *fd, size_t &size)
 	{
 		if (i == pos)
 			continue ;
-		tmp[i].fd = fd[i].fd;
-		tmp[i].events = fd[i].events;
-		tmp[i].revents = fd[i].revents;
+		tmp[j].fd = fd[i].fd;
+		tmp[j].events = fd[i].events;
+		tmp[j].revents = fd[i].revents;
+		j++;
 	}
 	delete [] fd;
 	size -= 1;

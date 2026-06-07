@@ -43,7 +43,7 @@ int main()
 			std::cerr << "Poll faild" << std::endl;
 			return (1);
 		}
-		for (int i = 0; i < fd_ready; i++)
+		for (size_t i = 0; i < size; i++)
 		{
 			if (fd[i].revents & POLLHUP)
 			{

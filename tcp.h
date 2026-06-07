@@ -7,6 +7,7 @@
 # include <string>
 # include <cstring>
 # include <cerrno>
+# include <cstdio>
 # include <fcntl.h>
 # include <unistd.h>
 # include <poll.h>
@@ -19,7 +20,7 @@ void	ft_close(struct pollfd *fd, size_t &size);
 int		ft_resv(int	fd, std::string &s, int flags);
 int		ft_socket(int domain, int type, int protocol);
 struct pollfd	*ft_accept(struct pollfd *fds, size_t &size);
-struct pollfd	*ft_erase(int pos, struct pollfd *fds, size_t &size);
+struct pollfd	*ft_erase(size_t pos, struct pollfd *fds, size_t &size);
 
 
 
