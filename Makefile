@@ -7,8 +7,7 @@ C_RESET  = \033[0m
 
 NAME = webserv
 CC = c++
-CFLAGS = -Wall -Wextra -Werror -std=c++98
-SRC = $(wildcard *.cpp)
+SRC = tcp.cpp utils.cpp
 OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)
@@ -31,4 +30,9 @@ fclean: clean
 	@rm -fv $(NAME)
 
 re: fclean all
+
+run : re all 
+	@echo "$(C_BLUE) Runing the excutable $(NAME)...$(C_RESET)"
+	@./$(NAME)
+
 .PHONY: all clean fclean re

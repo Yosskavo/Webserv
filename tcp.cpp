@@ -1,92 +1,87 @@
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
+#include "tcp.h"
+#include <stdio.h>
 
 int main()
 {
-	int fd_socket;
-	int fd_client;
-	int opt = 1;
-	struct sockaddr_in	s_socket;
-	struct sockaddr_in	s_accept;
-	socklen_t l_socket = sizeof(s_accept);
-	char	str[1024];
-	std::string			s;
-	int			tmp;
+	int fd_socket = -1;
+	int	fd_ready = 0;
+	struct pollfd		*fd;
+	size_t				size = 1;
+	std::map<int, std::string>	m;
 
-	fd_socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (fd_socket < 0)
+	fd = new struct pollfd[1];
+	try 
 	{
-		std::cerr << "socket faild : " << std::endl;
+		fd_socket = ft_socket(AF_INET, SOCK_STREAM, 0);
+		std::cout << "Create a socket : " << fd_socket << std::endl;
+		ft_bind(fd_socket, INADDR_ANY, 8080, AF_INET);
+		std::cout << "Bind to the socket" << std::endl;
+		ft_listen(fd_socket, SOMAXCONN);
+		std::cout << "Listen is set" << std::endl;
+	}
+	catch (const std::exception &e)
+	{
+		std::cout << e.what() << std::endl;
+		if (fd_socket > -1)
+			close(fd_socket);
 		return (1);
 	}
-	if (setsockopt(fd_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
-	{
-		std::cerr << "setsockopt failed" << std::endl;
-		close(fd_socket);
-		return (1);
-	}
-	std::cout << "Create a socket : " << fd_socket << std::endl;
-	std::memset(&s_socket, 0, sizeof(s_socket));
-	s_socket.sin_addr.s_addr = INADDR_ANY;
-	s_socket.sin_port = htons(8080);
-	s_socket.sin_family = AF_INET;
-	if (bind(fd_socket, (struct sockaddr *)&s_socket, sizeof(s_socket)) == -1)
-	{
-		std::cerr << "bind failed : " << std::endl;
-		close(fd_socket);
-		return (1);
-	}
-	std::cout << "Bind to the socket" << std::endl;
-	if (listen(fd_socket, SOMAXCONN))
-	{
-		std::cerr << "listen faild : " << std::endl;
-		close(fd_socket);
-		return (1);
-	}
-	std::memset(&s_accept, 0, sizeof(s_accept));
-	fd_client = accept(fd_socket, (struct sockaddr *)&s_accept, &l_socket);
-	if (fd_client == -1)
-	{
-		std::cerr << "accept faild : " << std::endl;
-		close(fd_socket);
-		return (1);
-	}
-	std::cout << "Accept client : " << fd_client << std::endl;
-	std::cout << "Waiting for client to send" << std::endl;
+	fd[0].fd = fd_socket;
+	fd[0].revents = 0;
+	fd[0].events = POLLIN;
 	while (true)
 	{
-		std::memset(&str, 0, sizeof(str));
-		tmp = recv(fd_client, &str, 1024, 0);
-		if (!tmp)
+		fd_ready = poll(fd, size, -1);
+		if (fd_ready == -1)
 		{
-			std::cerr << "Client Disconnected" << std::endl;
-			close(fd_client);
-			break ;
+			std::cerr << "Poll faild" << std::endl;
+			perror("Poll");
+			return (1);
 		}
-		else if (tmp == -1)
+		if (fd_ready == 0)
 		{
-			std::cerr << "resv faild : " << std::endl;
-			close(fd_client);
-			break;
+			std::cerr << "Poll faild" << std::endl;
+			return (1);
 		}
-		s = str;
-		std::cout << "Client : " +s;
-		s = "Delivered\n";
-		// TODO: implement poll();
-
-		// tmp = send(fd_client, s.c_str(), s.size(), 0);
-		// if (tmp == -1)
-		// {
-		// 	std::cerr << "send faild : " << std::endl;
-		// 	close(fd_client);
-		// 	break ;
-		// }
-		s.clear();
+		for (int i = 0; i < fd_ready; i++)
+		{
+			if (fd[i].revents & POLLHUP)
+			{
+				std::cout << "The client " << fd[i].fd << " Hung up" << std::endl;
+				fd = ft_erase(i, fd, size);
+			}
+			else if (fd[i].revents & POLLERR && !i)
+			{
+				std::cout << "An Error accord with the client " << fd[i].fd << std::endl;
+			}
+			else if (fd[i].revents & POLLERR)
+			{
+				std::cout << "An Error accord with the client " << fd[i].fd << std::endl;
+			}
+			else if (fd[i].fd == fd_socket && fd[i].revents & POLLIN)
+			{
+				std::cout << "A new request received" << std::endl;
+				fd = ft_accept(fd, size);
+			}
+			else if (fd[i].revents & POLLIN)
+			{
+				std::cout << "Client " << fd[i].fd << " is ready to send a data" << std::endl;
+				if (m.find(fd[i].fd) == m.end())
+					m[fd[i].fd] = "";
+				if (!ft_resv(fd[i].fd, m[fd[i].fd], 0))
+				{
+					std::cout << "Client " << fd[i].fd << " is disconnected" << std::endl;
+					m.erase(i);
+					fd = ft_erase(i, fd, size);
+				}
+			}
+			else if (fd[i].revents & POLLOUT)
+			{
+				std::cout << "Client " << fd[i].fd << " is ready to receive a data" << std::endl;
+				// ft_send();
+			}
+		}
 	}
-	close(fd_socket);
+	ft_close(fd, size);
 	std::cout << "Exit" << std::endl;
 }
