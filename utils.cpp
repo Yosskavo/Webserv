@@ -73,7 +73,7 @@ struct pollfd	*ft_accept(struct pollfd *fds, size_t &size)
 	for (size_t i = 0; i < fd.size(); i++)
 	{
 		pfd[i + size].fd = fd[i];
-		pfd[i + size].events = POLLIN;
+		pfd[i + size].events = POLLIN | POLLOUT;
 		pfd[i + size].revents = 0;
 	}
 	size = size + fd.size();
@@ -85,13 +85,15 @@ int		ft_resv(int	fd, std::string &s, int flags)
 	int i = 0;
 	char c[1025];
 	size_t	pos;
+	int f = 1;
+
 	std::string	tmp;
 
+	// TODO: this should be read all the data instead of just some
 	i = recv(fd, &c, 1023, flags);
 	if (i == -1)
 	{
-		// throw std::runtime_error("Recv failed");
-		perror("recv");
+		throw std::runtime_error("Recv failed");
 		return (0);
 	}
 	if (i == 0)
@@ -102,13 +104,14 @@ int		ft_resv(int	fd, std::string &s, int flags)
 	if (pos == std::string::npos)
 	{
 		std::cout << "--- the client " << fd << " didn't complate his data --- \n" << std::endl;
+		f = 2;
 	}
 	else {
 		tmp = s.substr(0, pos + 4);
 		std::cout << "--- the full data from client " << fd << " --- \n" << "The Http \n" << tmp << std::endl;
 		s.erase(0, pos + 4);
 	}
-	return (1);
+	return (f);
 }
 
 struct pollfd *ft_erase(size_t pos, struct pollfd *fd, size_t &size)
@@ -132,6 +135,14 @@ struct pollfd *ft_erase(size_t pos, struct pollfd *fd, size_t &size)
 	delete [] fd;
 	size -= 1;
 	return (tmp);
+}
+
+void ft_send(int fd, const char *str, size_t size, int flag)
+{
+	if (send(fd, str, size, flag) == -1)
+	{
+		throw std::runtime_error("Send failed");
+	}
 }
 
 void	ft_close(struct pollfd *fd, size_t & size)

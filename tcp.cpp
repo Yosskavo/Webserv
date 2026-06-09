@@ -3,10 +3,13 @@
 
 int main()
 {
+	// NOTE: should i create first class
 	int fd_socket = -1;
 	int	fd_ready = 0;
 	struct pollfd		*fd;
 	size_t				size = 1;
+	int					f;
+	std::string				str;
 	std::map<int, std::string>	m;
 
 	fd = new struct pollfd[1];
@@ -68,18 +71,53 @@ int main()
 				std::cout << "Client " << fd[i].fd << " is ready to send a data" << std::endl;
 				if (m.find(fd[i].fd) == m.end())
 					m[fd[i].fd] = "";
-				if (!ft_resv(fd[i].fd, m[fd[i].fd], 0))
+				try {
+					f = ft_resv(fd[i].fd, m[fd[i].fd], 0);
+				}
+				catch (const std::exception & e)
+				{
+					std::cout << e.what() << std::endl;
+				}
+				if (!f)
 				{
 					std::cout << "Client " << fd[i].fd << " is disconnected" << std::endl;
 					m.erase(i);
 					fd = ft_erase(i, fd, size);
 				}
+				if (fd[i].revents & POLLOUT)
+				{
+					if (f == 1)
+					{
+						str = "Complated\n";
+						try {
+							ft_send(fd[i].fd, str.c_str(), str.size(), 0);
+						}
+						catch (const std::exception & e)
+						{
+							std::cout << e.what() << std::endl;
+						}
+					}
+					else if (f == 2)
+					{
+						str = "need more data Complated\n";
+						try {
+							ft_send(fd[i].fd, str.c_str(), str.size(), 0);
+						}
+						catch (const std::exception & e)
+						{
+							std::cout << e.what() << std::endl;
+						}
+					}
+				}
+				else {
+					std::cout << "No pollout" << std::endl;
+				}
 			}
-			else if (fd[i].revents & POLLOUT)
-			{
-				std::cout << "Client " << fd[i].fd << " is ready to receive a data" << std::endl;
-				// ft_send();
-			}
+			// else if (fd[i].revents & POLLOUT)
+			// {
+			// 	std::cout << "Client " << fd[i].fd << " is ready to receive a data" << std::endl;
+			// 	// ft_send();
+			// }
 		}
 	}
 	ft_close(fd, size);
