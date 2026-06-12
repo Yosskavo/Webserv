@@ -9,7 +9,7 @@ C_PURPLE = \033[1;35m
 NAME = webserv
 CC = c++
 CFLAGS = -Wall -Wextra -Werror -g -std=c++98
-SRC = tcp.cpp utils.cpp
+SRC = tcp.cpp utils.cpp http.cpp
 OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)

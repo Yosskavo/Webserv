@@ -80,7 +80,7 @@ struct pollfd	*ft_accept(struct pollfd *fds, size_t &size)
 	return (pfd);
 }
 
-int		ft_resv(int	fd, std::string &s, int flags)
+int		ft_resv(int	fd, std::string &s, int flags, int revents)
 {
 	int i = 0;
 	char c[1025];
@@ -109,7 +109,23 @@ int		ft_resv(int	fd, std::string &s, int flags)
 	else {
 		tmp = s.substr(0, pos + 4);
 		std::cout << "--- the full data from client " << fd << " --- \n" << "The Http \n" << tmp << std::endl;
-		s.erase(0, pos + 4);
+		std::cout << "size = " << tmp.length() << std::endl;
+		s.erase(pos, pos + 4);
+		if (s.find("\r\n\r\n") == std::string::npos)
+		{
+			std::cout << "This worked" << std::endl;
+		}
+		else {
+			std::cout << "Didn't work" << std::endl;
+		}
+		ft_parse_the_http_request(s);
+		s.erase(0, pos);
+	}
+	if (revents & POLLOUT)
+	{
+		if (f == 1)
+		{
+		}
 	}
 	return (f);
 }

@@ -1,6 +1,19 @@
 #include "tcp.h"
 #include <stdio.h>
 
+int	ft_init()
+{
+	int fd_socket;
+
+	fd_socket = ft_socket(AF_INET, SOCK_STREAM, 0);
+	std::cout << "Create a socket : " << fd_socket << std::endl;
+	ft_bind(fd_socket, INADDR_ANY, 8080, AF_INET);
+	std::cout << "Bind to the socket" << std::endl;
+	ft_listen(fd_socket, SOMAXCONN);
+	std::cout << "Listen is set" << std::endl;
+	return (fd_socket);
+}
+
 int main()
 {
 	// NOTE: should i create first class
@@ -15,12 +28,7 @@ int main()
 	fd = new struct pollfd[1];
 	try 
 	{
-		fd_socket = ft_socket(AF_INET, SOCK_STREAM, 0);
-		std::cout << "Create a socket : " << fd_socket << std::endl;
-		ft_bind(fd_socket, INADDR_ANY, 8080, AF_INET);
-		std::cout << "Bind to the socket" << std::endl;
-		ft_listen(fd_socket, SOMAXCONN);
-		std::cout << "Listen is set" << std::endl;
+		fd_socket = ft_init();
 	}
 	catch (const std::exception &e)
 	{
@@ -72,7 +80,7 @@ int main()
 				if (m.find(fd[i].fd) == m.end())
 					m[fd[i].fd] = "";
 				try {
-					f = ft_resv(fd[i].fd, m[fd[i].fd], 0);
+					f = ft_resv(fd[i].fd, m[fd[i].fd], 0, fd[i].revents);
 				}
 				catch (const std::exception & e)
 				{
@@ -82,44 +90,11 @@ int main()
 				{
 					std::cout << "Client " << fd[i].fd << " is disconnected" << std::endl;
 					m.erase(i);
-					fd = ft_erase(i, fd, size);
-				}
-				if (fd[i].revents & POLLOUT)
-				{
-					if (f == 1)
-					{
-						str = "Complated\n";
-						try {
-							ft_send(fd[i].fd, str.c_str(), str.size(), 0);
-						}
-						catch (const std::exception & e)
-						{
-							std::cout << e.what() << std::endl;
-						}
-					}
-					else if (f == 2)
-					{
-						str = "need more data Complated\n";
-						try {
-							ft_send(fd[i].fd, str.c_str(), str.size(), 0);
-						}
-						catch (const std::exception & e)
-						{
-							std::cout << e.what() << std::endl;
-						}
-					}
-				}
-				else {
-					std::cout << "No pollout" << std::endl;
+					fd = ft_erase(fd[i].fd, fd, size);
 				}
 			}
-			// else if (fd[i].revents & POLLOUT)
-			// {
-			// 	std::cout << "Client " << fd[i].fd << " is ready to receive a data" << std::endl;
-			// 	// ft_send();
-			// }
 		}
 	}
 	ft_close(fd, size);
-	std::cout << "Exit" << std::endl;
+	std::cout << "exit" << std::endl;
 }
