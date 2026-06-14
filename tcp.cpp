@@ -74,7 +74,7 @@ int main()
 				std::cout << "A new request received" << std::endl;
 				fd = ft_accept(fd, size);
 			}
-			else if (fd[i].revents & POLLIN)
+			else if (fd[i].revents & POLLIN && fd[i].fd != fd[0].fd)
 			{
 				std::cout << "Client " << fd[i].fd << " is ready to send a data" << std::endl;
 				if (m.find(fd[i].fd) == m.end())
@@ -90,7 +90,7 @@ int main()
 				{
 					std::cout << "Client " << fd[i].fd << " is disconnected" << std::endl;
 					m.erase(i);
-					fd = ft_erase(fd[i].fd, fd, size);
+					fd = ft_erase(i, fd, size);
 				}
 			}
 		}

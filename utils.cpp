@@ -85,6 +85,7 @@ int		ft_resv(int	fd, std::string &s, int flags, int revents)
 	int i = 0;
 	char c[1025];
 	size_t	pos;
+	t_request	r;
 	int f = 1;
 
 	std::string	tmp;
@@ -100,6 +101,24 @@ int		ft_resv(int	fd, std::string &s, int flags, int revents)
 		return (0);
 	c[i] = '\0';
 	s += c;
+	while (true)
+	{
+		i = recv(fd, &c, 1023, flags);
+		if (i == -1 && errno == EAGAIN)
+			break ;
+		if (i == -1)
+		{
+			std::perror("Recv");
+			throw std::runtime_error("Recv failed");
+			return (0);
+		}
+		if (!i)
+			break ;
+		c[i] = '\0';
+		s += c;
+		if (i < 1023)
+			break ;
+	}
 	pos = s.find("\r\n\r\n");
 	if (pos == std::string::npos)
 	{
@@ -118,13 +137,25 @@ int		ft_resv(int	fd, std::string &s, int flags, int revents)
 		else {
 			std::cout << "Didn't work" << std::endl;
 		}
-		ft_parse_the_http_request(s);
+		r = ft_parse_the_http_request(s);
 		s.erase(0, pos);
+	}
+	std::cout << "==> method   : " << r.method << std::endl;
+	std::cout << "==> path     : " << r.path << std::endl;
+	std::cout << "==> protocol : " << r.protocol << std::endl;
+	std::cout << "==> version  : " << r.version / 10.0 << std::endl;
+	for (std::map<std::string, std::string>::iterator it = r.content.begin(); it != r.content.end(); it++)
+	{
+		std::cout << "|-> " << it->first << " = " << it->second << std::endl;
 	}
 	if (revents & POLLOUT)
 	{
-		if (f == 1)
+		if (!f)
 		{
+			// std::string s = r.protocol + ;
+		}
+		else {
+			
 		}
 	}
 	return (f);
@@ -132,6 +163,7 @@ int		ft_resv(int	fd, std::string &s, int flags, int revents)
 
 struct pollfd *ft_erase(size_t pos, struct pollfd *fd, size_t &size)
 {
+	std::cout << "pos : " <<  pos << "; fd : " << fd[pos].fd << "; size : " << size << std::endl;
 	int j = 0;
 	if (pos > size)
 		return (fd);
