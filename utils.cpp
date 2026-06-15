@@ -80,15 +80,16 @@ struct pollfd	*ft_accept(struct pollfd *fds, size_t &size)
 	return (pfd);
 }
 
-size_t	ft_length_of_file(std::ifstream is)
+size_t	ft_length_of_file(const char *path)
 {
 	size_t t = 0;
 	std::string	s;
-	// char		*c;
+	std::ifstream is(path);
 
-	while ( std::getline(is, s) )
+	while (std::getline(is, s))
 	{
 		t += s.size();
+		s.clear();
 	}
 	return (t);
 }
@@ -163,15 +164,29 @@ int		ft_resv(int	fd, std::string &s, int flags, int revents)
 	}
 	if (revents & POLLOUT)
 	{
-		if (!f)
+		if (f == 1)
 		{
 			std::stringstream ss;
 			std::ifstream	is(r.path.c_str());
 			size_t			i;
+			std::string		str;
 
 			ss << r.version / 10.0;
-			i = ft_length_of_file(is);
+			i = ft_length_of_file(r.path.c_str());
 			std::string s = r.protocol + "/" + ss.str() + " 200 OK\r\n" + "Content-Type: text/html\r\nContent-Length: ";
+			ss.str("");
+			ss << i;
+			s += ss.str() + "\r\n\r\n";
+			std::cout << ss.str() << std::endl;
+			std::cout << i << std::endl;
+			std::cout << s << std::endl;
+			ft_send(fd, s.c_str(), s.length(), 0);
+			while (std::getline(is, str))
+			{
+				std::cout << str << std::endl;
+				ft_send(fd, str.c_str(), str.length(), 0);
+				str.clear();
+			}
 		}
 		else {
 			
