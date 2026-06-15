@@ -8,6 +8,7 @@
 # include <sstream>
 # include <cstring>
 # include <cstdlib>
+# include <fstream>
 # include <cerrno>
 # include <cstdio>
 # include <fcntl.h>

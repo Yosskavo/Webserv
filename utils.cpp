@@ -80,6 +80,19 @@ struct pollfd	*ft_accept(struct pollfd *fds, size_t &size)
 	return (pfd);
 }
 
+size_t	ft_length_of_file(std::ifstream is)
+{
+	size_t t = 0;
+	std::string	s;
+	// char		*c;
+
+	while ( std::getline(is, s) )
+	{
+		t += s.size();
+	}
+	return (t);
+}
+
 int		ft_resv(int	fd, std::string &s, int flags, int revents)
 {
 	int i = 0;
@@ -152,7 +165,13 @@ int		ft_resv(int	fd, std::string &s, int flags, int revents)
 	{
 		if (!f)
 		{
-			// std::string s = r.protocol + ;
+			std::stringstream ss;
+			std::ifstream	is(r.path.c_str());
+			size_t			i;
+
+			ss << r.version / 10.0;
+			i = ft_length_of_file(is);
+			std::string s = r.protocol + "/" + ss.str() + " 200 OK\r\n" + "Content-Type: text/html\r\nContent-Length: ";
 		}
 		else {
 			
