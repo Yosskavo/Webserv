@@ -1,12 +1,23 @@
-#include <iostream>
+#include "webserv.h"
 
 int main(int ac, char **av)
 {
+	t_config	config;
+	short			exit_status = 0;
+
 	if (ac != 2)
 	{
-		std::cerr << "Invalid number of argument (should be webserv [configfile])" << std::endl;
+		std::cerr << "Error : Invalide argument ! (it should be /webserv [configuration file])" << std::endl;
 		return (1);
 	}
-
-    return 0;
+	try
+	{
+		config = ft_parce_config(av[1]);
+	}
+	catch (const std::exception &e)
+	{
+		std::cout << e.what() << std::endl;
+		exit_status = 1;
+	}
+	return (exit_status);
 }
