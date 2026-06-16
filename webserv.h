@@ -3,6 +3,9 @@
 
 # include <iostream>
 # include <fstream>
+# include <sstream>
+# include <vector>
+# include <stack>
 # include <exception>
 
 typedef struct s_config {
