@@ -2,6 +2,11 @@
 
 // NOTE: should skip the comment's too
 
+static void			ft_delete_comments(std::string &s)
+{
+
+}
+
 std::vector<std::string>	ft_split(const std::string &s)
 {
 	size_t	pos = 0;
@@ -21,7 +26,7 @@ std::vector<std::string>	ft_split(const std::string &s)
 	return (v_string);
 }
 
-bool		ft_check_while_space(const std::string &s)
+static bool		ft_check_while_space(const std::string &s)
 {
 	for (size_t i = 0; i < s.length(); i++)
 	{
@@ -47,68 +52,12 @@ t_config	ft_parce_config(const char *path_to_config)
 	}
 	while (std::getline(is, str))
 	{
+		ft_delete_comments(str);
 		if (ft_check_while_space(str))
 		{
 			str.clear();
 			continue ;
 		}
-		v_string = ft_split(str);
-		if (v_string[0] == "server")
-		{
-			if (v_string[v_string.size() - 1] != "{")
-			{
-				std::stringstream ss;
-
-				ss << "in the line : " << i << ", Block diractive should have beginning '{'";
-				throw std::runtime_error(ss.str());
-			}
-			if (v_string.size() != 2)
-			{
-				std::stringstream ss;
-
-				ss << "in the line : " << i << " , the block diractive should have only the beginning";
-				throw std::runtime_error(ss.str());
-			}
-			if (s_char.size())
-			{
-				std::stringstream ss;
-
-				ss << "in the line : " << i << " , the config file have multi biginning '{}'";
-				throw std::runtime_error(ss.str());
-			}
-			s_char.push('{');
-		}
-		if (v_string[0] == "location")
-		{
-			if (v_string[v_string.size() - 1] != "{")
-			{
-				std::stringstream ss;
-
-				ss << "in the line : " << i << ", Block diractive should have beginning '{'";
-				throw std::runtime_error(ss.str());
-			}
-			if (v_string.size() != 3)
-			{
-				std::stringstream ss;
-
-				ss << "in the line : " << i << " , the block diractive [location] should have a value and a beginning '{'";
-				throw std::runtime_error(ss.str());
-			}
-			if (s_char.size() != 2)
-			{
-				std::stringstream ss;
-
-				ss << "in the line : " << i << " , the config file have multi biginning '{}'";
-				throw std::runtime_error(ss.str());
-			}
-			s_char.push('{');
-		}
-		else
-		{
-
-		}
-		str.clear();
-		i++;
 	}
 	return (config);
 }
