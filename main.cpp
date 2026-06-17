@@ -13,6 +13,7 @@ int main(int ac, char **av)
 	try
 	{
 		config = ft_parce_config(av[1]);
+		std::cout << "Its work" << std::endl;
 	}
 	catch (const std::exception &e)
 	{
