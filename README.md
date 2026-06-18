@@ -2,5 +2,6 @@
 
 ### TO-DO list
 
-- [ ] Parsing configuration file
-
+- [x] parentise handling
+- [x] delting comments
+- [ ] fill the config
