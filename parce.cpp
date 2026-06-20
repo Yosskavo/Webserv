@@ -1,7 +1,7 @@
 #include "webserv.h"
 
-// TODO: skiping comment's and delete new line
-// TODO: Work on brakets {} and a functionality of nested brakest
+// NOTE: skiping comment's and delete new line
+// NOTE: Work on brakets {} and a functionality of nested brakest
 // TODO: Work on accepting value
 
 bool	ft_is_white_spaces(char c)
@@ -76,10 +76,56 @@ bool	ft_getserver(std::vector<std::string> &v_s, std::ifstream &is)
 	return (true);
 }
 
+void	ft_handle_ather(std::vector<std::string>::iterator &it, t_config &t)
+{
+	if (*it == "listen")
+	{
+	}
+	else if (*it == "server_name")
+	{
+	}
+	else if (*it == "client_max_body_size")
+	{
+	}
+	else if (*it == "error_page")
+	{
+	}
+	else {
+		throw std::runtime_error("Invalide variable in the config file");
+	}
+}
+
+// void ft_handle_
+
+t_config	ft_full_server_config(std::vector<std::string> &s_v)
+{
+	t_config t;
+
+	if (s_v[0] != "server")
+	{
+		throw std::runtime_error("Unknown type ! it should start with server");
+	}
+	if (s_v[1] != "{")
+	{
+		throw std::runtime_error("The block diractive should start have a starting breaket");
+	}
+	for (std::vector<std::string>::iterator it = s_v.begin(); it != s_v.end(); it++)
+	{
+		if (*it == "location")
+		{
+			// ft_handle_location(it, t);
+		}
+		else {
+			// ft_handle_ather(it, t);
+		}
+	}
+	return (t);
+}
+
 t_config	ft_parce_config(const char *path_to_config)
 {
 	t_config		config;
-	// std::vector<t_config>		v_config;
+	std::vector<t_config>		v_config;
 	std::ifstream	is( path_to_config );
 	// size_t				i = 1;
 	std::vector<std::string> v_s;
@@ -90,10 +136,7 @@ t_config	ft_parce_config(const char *path_to_config)
 	}
 	while (ft_getserver(v_s, is))
 	{
-		for (size_t i = 0; i < v_s.size(); i++)
-		{
-			std::cout << "the line : " << i << " " << v_s[i] << std::endl;
-		}
+		v_config.push_back(ft_full_server_config(v_s));
 		v_s.clear();
 	}
 	is.close();
