@@ -1,4 +1,5 @@
 #include "webserv.h"
+#include <csetjmp>
 
 // NOTE: skiping comment's and delete new line
 // NOTE: Work on brakets {} and a functionality of nested brakest
@@ -76,16 +77,81 @@ bool	ft_getserver(std::vector<std::string> &v_s, std::ifstream &is)
 	return (true);
 }
 
-void	ft_handle_ather(std::vector<std::string>::iterator &it, t_config &t)
+static void ft_check_ip(std::string &s)
+{
+	int i, j, k, l;
+	int res;
+
+	res = std::sscanf(s.c_str(), "%d.%d.%d.%d", &i, &j, &k, &l);
+	if (res != 4)
+		throw std::runtime_error("Invalide formatte of ip it should be N.N.N.N");
+	if (!(i >= 0 && i < 256) || !(i >= 0 && j < 256) || !(l >= 0 && l < 256) || !(k >= 0 && k < 256))
+		throw std::runtime_error("The ip's bytes should be around 0-255");
+}
+
+void ft_port_ip_geter(std::string &it, t_config & t)
+{
+	size_t	i;
+	char	*c;
+
+	i = it.find(':');
+	if (i != std::string::npos)
+	{
+		t.ip = it.substr(0, i);
+		ft_check_ip(t.ip);
+		t.port = std::strtod(it.substr(i + 1).c_str() , &c);
+		if (c != '\0')
+			throw std::runtime_error("port should contain only numbers");
+	}
+	else {
+		i = it.find('.');
+		if (i != std::string::npos)
+		{
+			t.ip = it;
+			ft_check_ip(t.ip);
+		}
+		else {
+			t.port = std::strtod(it.c_str() , &c);
+			if (c != '\0')
+				throw std::runtime_error("port should contain only numbers");
+		}
+	}
+}
+
+void	ft_handle_ather(std::vector<std::string>::iterator &it, std::vector<std::string>::iterator &end, t_config &t)
 {
 	if (*it == "listen")
 	{
+		it++;
+		if (*it == ";")
+		{
+			throw std::runtime_error("Non value gaving for listen");
+		}
+		ft_port_ip_geter(*it, t);
+		if (*it != ";")
+		{
+			throw std::runtime_error("Every variable should end with delimeter ';'");
+		}
 	}
 	else if (*it == "server_name")
 	{
+		it++;
+		if (*it == ";")
+		{
+			throw std::runtime_error("Non value gaving for server_name");
+		}
+		while (*it != ";")
+		{
+			if (it == end)
+				throw std::runtime_error("Every variable end with delimeter ';'");
+			// WARN: this doesn't check if the actual server name is valid
+			t.server_name.push_back(*it);
+			it++;
+		}
 	}
 	else if (*it == "client_max_body_size")
 	{
+
 	}
 	else if (*it == "error_page")
 	{
@@ -94,8 +160,6 @@ void	ft_handle_ather(std::vector<std::string>::iterator &it, t_config &t)
 		throw std::runtime_error("Invalide variable in the config file");
 	}
 }
-
-// void ft_handle_
 
 t_config	ft_full_server_config(std::vector<std::string> &s_v)
 {
@@ -136,7 +200,13 @@ t_config	ft_parce_config(const char *path_to_config)
 	}
 	while (ft_getserver(v_s, is))
 	{
-		v_config.push_back(ft_full_server_config(v_s));
+		int i =1;
+		for (std::vector<std::string>::iterator it = v_s.begin(); it != v_s.end(); it++)
+		{
+			std::cout << "line : " << i << " " << *it << std::endl;
+			i++;
+		}
+		// v_config.push_back(ft_full_server_config(v_s));
 		v_s.clear();
 	}
 	is.close();
