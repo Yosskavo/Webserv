@@ -126,8 +126,9 @@ bool ft_check_is_number(std::string &it)
 	i = 0;
 	while (it[i])
 	{
-		if (!std::isdigit(it[0]))
+		if (!std::isdigit(it[i]))
 			return (false);
+		i++;
 	}
 	return (true);
 }
@@ -140,6 +141,7 @@ int	ft_to_number(std::string &it)
 	while (it[i])
 	{
 		j = j * 10 + it[i] - '0';
+		i++;
 	}
 	return (j);
 }
@@ -149,6 +151,7 @@ void ft_error_pages_get(std::vector< std::string >::iterator &it, std::vector<st
 	std::vector<int>	v_error;
 	std::string			s_error = "";
 	size_t				tmp_error = 0;
+
 
 	while (*it != ";")
 	{
@@ -357,7 +360,11 @@ t_config	ft_full_server_config(std::vector<std::string> &s_v)
 	}
 	for (std::vector<std::string>::iterator it = s_v.begin() + 2; it != s_v.end(); it++)
 	{
-		if (*it == "location")
+		if (*it == "}")
+		{
+
+		}
+		else if (*it == "location")
 		{
 			// ft_handle_location(it, t);
 		}
@@ -367,6 +374,28 @@ t_config	ft_full_server_config(std::vector<std::string> &s_v)
 		}
 	}
 	return (t);
+}
+
+void	ft_print_this(t_config & t)
+{
+	std::cout << "Ip : " << t.ip << std::endl;
+	std::cout << "Port : " << t.port << std::endl;
+	std::cout << "Root : " << t.root_path << std::endl;
+	std::cout << "Allowed method : " << t.allow_method << std::endl;
+	std::cout << "Client Max Body size : " << t.client_max_body_size << std::endl;
+	std::cout << "Autoindex : " << t.autoindex << std::endl;
+	std::cout << "Index : " << t.index << std::endl;
+	std::cout << "Server Name : ";
+	for (std::vector<std::string>::iterator it = t.server_name.begin(); it != t.server_name.end(); it++)
+	{
+		std::cout << *it << " ";
+	}
+	std::cout << std::endl;
+	std::cout << "Error codes : " << std::endl;
+	for (std::map<int, std::string>::iterator it = t.error_pages.begin(); it != t.error_pages.end(); it++)
+	{
+		std::cout << "\t--> " << it->first << " " + it->second << std::endl;
+	}
 }
 
 t_config	ft_parce_config(const char *path_to_config)
@@ -383,13 +412,14 @@ t_config	ft_parce_config(const char *path_to_config)
 	}
 	while (ft_getserver(v_s, is))
 	{
-		int i =1;
-		for (std::vector<std::string>::iterator it = v_s.begin(); it != v_s.end(); it++)
-		{
-			std::cout << "line : " << i << " " << *it << std::endl;
-			i++;
-		}
+		// int i =1;
+		// for (std::vector<std::string>::iterator it = v_s.begin(); it != v_s.end(); it++)
+		// {
+		// 	std::cout << "line : " << i << " " << *it << std::endl;
+		// 	i++;
+		// }
 		v_config.push_back(ft_full_server_config(v_s));
+		ft_print_this(v_config[v_config.size() - 1]);
 		v_s.clear();
 	}
 	is.close();
