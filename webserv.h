@@ -6,6 +6,7 @@
 # include <string>
 # include <cstdlib>
 # include <sstream>
+# include <cmath>
 # include <vector>
 # include <map>
 # include <stack>
@@ -30,6 +31,15 @@ typedef struct s_config {
 	short						allow_method;
 } t_config;
 
+// *** Parcing *** //
+
 t_config	ft_parce_config(const char *path_to_config);
+void		ft_port_ip_geter(std::string &it, t_config & t);
+void		ft_get_max_body(std::string &s, t_config &t);
+void		ft_methods_get(std::vector<std::string>::iterator & it, std::vector<std::string>::iterator & end, t_config & t);
+void		ft_error_pages_get(std::vector< std::string >::iterator &it, std::vector<std::string>::iterator &end, t_config &t);
+bool		ft_getserver(std::vector<std::string> &v_s, std::ifstream &is);
+
+
 
 #endif

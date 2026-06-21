@@ -7,8 +7,8 @@ C_RESET  = \033[0m
 
 NAME = webserv
 CC = c++
-CFLAGS = -Wall -Wextra -Werror -std=c++98
-SRC = $(wildcard *.cpp)
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -I .
+SRC =  main.cpp parce/error.cpp parce/listen.cpp parce/max_body.cpp parce/method.cpp parce/parce.cpp parce/server.cpp
 OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)
@@ -18,7 +18,7 @@ $(NAME): $(OBJ)
 	@$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
 	@echo "$(C_GREEN) 󰙴 Done compiling!$(C_RESET)"
 
-%.o: %.cpp
+%.o: %.cpp webserv.h
 	@echo "$(C_YELLOW) 󰔚 Compiling $<...$(C_RESET)"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
