@@ -19,6 +19,20 @@ typedef	enum e_method {
 	UNKNOWN = 8
 }	t_method;
 
+typedef struct s_location {
+	std::string path;
+	short		allow_method;
+	std::map<int, std::string>	return_path;
+	std::string					root_path;
+	std::vector<std::string>	index;
+	bool						autoindex;
+	bool						upload;
+	std::string					upload_store;
+	std::map<std::string, std::string>	cgi_ext;
+	size_t						client_max_body_size;
+	 s_location(struct s_config &s);
+}	t_location;
+
 typedef struct s_config {
 	std::vector<std::string>		server_name;
 	std::map<int, std::string>	error_pages;
@@ -29,6 +43,7 @@ typedef struct s_config {
 	std::string					index;
 	bool					autoindex;
 	short						allow_method;
+	std::vector<t_location>		location;
 } t_config;
 
 // *** Parcing *** //
@@ -39,7 +54,7 @@ void		ft_get_max_body(std::string &s, t_config &t);
 void		ft_methods_get(std::vector<std::string>::iterator & it, std::vector<std::string>::iterator & end, t_config & t);
 void		ft_error_pages_get(std::vector< std::string >::iterator &it, std::vector<std::string>::iterator &end, t_config &t);
 bool		ft_getserver(std::vector<std::string> &v_s, std::ifstream &is);
-void		ft_handle_location();
+t_location		ft_handle_location(std::vector<std::string>::iterator &it, std::vector<std::string>::iterator &end, t_config &t);
 
 
 #endif

@@ -82,6 +82,7 @@ void	ft_handle_ather(std::vector<std::string>::iterator &it, std::vector<std::st
 		{
 			throw std::runtime_error("Non value gaving for index");
 		}
+		// TODO: change this to a vector holder
 		t.index = *it;
 		it++;
 		if (end == it || *it != ";")
@@ -126,6 +127,7 @@ void	ft_handle_ather(std::vector<std::string>::iterator &it, std::vector<std::st
 t_config	ft_full_server_config(std::vector<std::string> &s_v)
 {
 	t_config t;
+	std::vector<std::string>	v_sl;
 
 	if (s_v[0] != "server")
 	{
@@ -139,12 +141,31 @@ t_config	ft_full_server_config(std::vector<std::string> &s_v)
 	{
 		if (*it == "location")
 		{
-			// ft_handle_location(it, t);
+			it++;
+			if (*it == "{" || *it == ";")
+				throw std::runtime_error("location should have a value then a start");
+			it++;
+			if (*it != "{" || *it == ";")
+			{
+				throw std::runtime_error("location should have a begining block '{'");
+			}
+			while (*it != "}")
+			{
+				v_sl.push_back(*it);
+				it++;
+			}
+			v_sl.push_back(*it);
 		}
 		else {
 			std::vector<std::string>::iterator iv(  s_v.end() );
 			ft_handle_ather(it, iv, t);
 		}
+	}
+	std::vector<std::string>::iterator ij(v_sl.end());
+	for (std::vector<std::string>::iterator it = v_sl.begin(); it != v_sl.end(); it++)
+	{
+		t_location l = ft_handle_location(it, ij, t);
+		t.location.push_back(l);
 	}
 	return (t);
 }
@@ -176,7 +197,6 @@ t_config	ft_parce_config(const char *path_to_config)
 	t_config		config;
 	std::vector<t_config>		v_config;
 	std::ifstream	is( path_to_config );
-	// size_t				i = 1;
 	std::vector<std::string> v_s;
 
 	if (!is.is_open())
