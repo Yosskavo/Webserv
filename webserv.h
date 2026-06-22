@@ -39,7 +39,7 @@ void		ft_get_max_body(std::string &s, t_config &t);
 void		ft_methods_get(std::vector<std::string>::iterator & it, std::vector<std::string>::iterator & end, t_config & t);
 void		ft_error_pages_get(std::vector< std::string >::iterator &it, std::vector<std::string>::iterator &end, t_config &t);
 bool		ft_getserver(std::vector<std::string> &v_s, std::ifstream &is);
-
+void		ft_handle_location();
 
 
 #endif

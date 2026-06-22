@@ -135,13 +135,9 @@ t_config	ft_full_server_config(std::vector<std::string> &s_v)
 	{
 		throw std::runtime_error("The block diractive should start have a starting breaket");
 	}
-	for (std::vector<std::string>::iterator it = s_v.begin() + 2; it != s_v.end(); it++)
+	for (std::vector<std::string>::iterator it = s_v.begin() + 2; *it != "}"; it++)
 	{
-		if (*it == "}")
-		{
-
-		}
-		else if (*it == "location")
+		if (*it == "location")
 		{
 			// ft_handle_location(it, t);
 		}
@@ -189,12 +185,16 @@ t_config	ft_parce_config(const char *path_to_config)
 	}
 	while (ft_getserver(v_s, is))
 	{
-		// int i =1;
-		// for (std::vector<std::string>::iterator it = v_s.begin(); it != v_s.end(); it++)
-		// {
-		// 	std::cout << "line : " << i << " " << *it << std::endl;
-		// 	i++;
-		// }
+		int i = 1;
+		
+		std::cout << "size of the container string : " << v_s.size() << "; is the ifstream eof : " << is.eof() << std::endl;
+		std::cout << "Parce reading : " << std::endl;
+		for (std::vector<std::string>::iterator it = v_s.begin(); it != v_s.end(); it++)
+		{
+			std::cout << "\t-->line " << i << " : " << *it << std::endl;
+			i++;
+		}
+		std::cout << "-----------------------------------" << std::endl;
 		v_config.push_back(ft_full_server_config(v_s));
 		ft_print_this(v_config[v_config.size() - 1]);
 		v_s.clear();

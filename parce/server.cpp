@@ -37,6 +37,8 @@ bool	ft_getserver(std::vector<std::string> &v_s, std::ifstream &is)
 			str = c;
 			v_s.push_back(str);
 			str = "";
+			if (c == '}' && !(sc.size()))
+				break ;
 		}
 		else if (c == '#')
 		{
@@ -69,5 +71,7 @@ bool	ft_getserver(std::vector<std::string> &v_s, std::ifstream &is)
 	}
 	if (str.length())
 		v_s.push_back(str);
+	if (is.eof() && !( sc.size() ))
+		return (false);
 	return (true);
 }
