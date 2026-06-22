@@ -8,7 +8,7 @@ C_RESET  = \033[0m
 NAME = webserv
 CC = c++
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -I .
-SRC =  main.cpp parce/error.cpp parce/listen.cpp parce/max_body.cpp parce/method.cpp parce/parce.cpp parce/server.cpp
+SRC = parce/error.cpp parce/location.cpp main.cpp parce/parce.cpp parce/server.cpp parce/listen.cpp struct/location.cpp  utils/numbers_handle.cpp parce/return.cpp  
 OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)

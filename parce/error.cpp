@@ -1,32 +1,5 @@
 #include "../webserv.h"
 
-static bool ft_check_is_number(std::string &it)
-{
-	size_t	i;
-
-	i = 0;
-	while (it[i])
-	{
-		if (!std::isdigit(it[i]))
-			return (false);
-		i++;
-	}
-	return (true);
-}
-
-static int	ft_to_number(std::string &it)
-{
-	size_t i = 0;
-	size_t j = 0;
-
-	while (it[i])
-	{
-		j = j * 10 + it[i] - '0';
-		i++;
-	}
-	return (j);
-}
-
 void ft_error_pages_get(std::vector< std::string >::iterator &it, std::vector<std::string>::iterator &end, t_config &t)
 {
 	std::vector<int>	v_error;

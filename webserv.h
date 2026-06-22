@@ -12,9 +12,13 @@
 # include <stack>
 # include <exception>
 
+# define MAX_GIGA 17179869183
+# define MAX_MIGA 17592186044415
+# define MAX_KILO 18014398509481983
+
 typedef	enum e_method {
 	GET = 1,
-	POLL = 2,
+	POST = 2,
 	DELETE = 4,
 	UNKNOWN = 8
 }	t_method;
@@ -40,21 +44,35 @@ typedef struct s_config {
 	size_t						port;
 	std::string					ip;
 	std::string					root_path;
-	std::string					index;
+	std::vector<std::string>					index;
 	bool					autoindex;
 	short						allow_method;
 	std::vector<t_location>		location;
+
+	s_config(void);
 } t_config;
+
+# include "templates/max_body.tpp"
+# include "templates/method.tpp"
 
 // *** Parcing *** //
 
-t_config	ft_parce_config(const char *path_to_config);
+
+void		ft_return_code_get(std::vector< std::string >::iterator &it, t_location &t);
 void		ft_port_ip_geter(std::string &it, t_config & t);
-void		ft_get_max_body(std::string &s, t_config &t);
-void		ft_methods_get(std::vector<std::string>::iterator & it, std::vector<std::string>::iterator & end, t_config & t);
 void		ft_error_pages_get(std::vector< std::string >::iterator &it, std::vector<std::string>::iterator &end, t_config &t);
 bool		ft_getserver(std::vector<std::string> &v_s, std::ifstream &is);
-t_location		ft_handle_location(std::vector<std::string>::iterator &it, std::vector<std::string>::iterator &end, t_config &t);
+t_config	ft_parce_config(const char *path_to_config);
+t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config &t);
 
+
+int			ft_to_number(std::string &it);
+bool		ft_check_is_number(std::string &it);
+
+// template <typename T>
+// 	void		ft_get_max_body(std::string &s, T &t);
+//
+// template <typename T>
+// 	void		ft_methods_get(std::vector<std::string>::iterator & it, T & t);
 
 #endif
