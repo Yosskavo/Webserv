@@ -1,7 +1,13 @@
 # Webserv
 
-### TO-DO list
+### TODO 
 
-- [x] parentise handling
-- [x] delting comments
-- [ ] fill the config
+- set-up connection
+- cgi configuration
+- cgi handling
+- parcing the http request
+- handling send and resv
+
+### Got Done :
+
+- parcing of the file
