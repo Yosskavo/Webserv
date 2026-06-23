@@ -169,36 +169,9 @@ t_config	ft_full_server_config(std::vector<std::string> &s_v)
 	return (t);
 }
 
-void	ft_print_this(t_config & t)
-{
-	std::cout << "Ip : " << t.ip << std::endl;
-	std::cout << "Port : " << t.port << std::endl;
-	std::cout << "Root : " << t.root_path << std::endl;
-	std::cout << "Allowed method : " << t.allow_method << std::endl;
-	std::cout << "Client Max Body size : " << t.client_max_body_size << std::endl;
-	std::cout << "Autoindex : " << t.autoindex << std::endl;
-	std::cout << "Server Name : ";
-	for (std::vector<std::string>::iterator it = t.server_name.begin(); it != t.server_name.end(); it++)
-	{
-		std::cout << *it << " ";
-	}
-	std::cout << std::endl;
-	std::cout << "Index : ";
-	for (std::vector<std::string>::iterator it = t.index.begin(); it != t.index.end(); it++)
-	{
-		std::cout << *it << " ";
-	}
-	std::cout << std::endl;
-	std::cout << "Error codes : " << std::endl;
-	for (std::map<int, std::string>::iterator it = t.error_pages.begin(); it != t.error_pages.end(); it++)
-	{
-		std::cout << "\t--> " << it->first << " " + it->second << std::endl;
-	}
-}
 
-t_config	ft_parce_config(const char *path_to_config)
+std::vector<t_config>	ft_parce_config(const char *path_to_config)
 {
-	t_config		config;
 	std::vector<t_config>		v_config;
 	std::ifstream	is( path_to_config );
 	std::vector<std::string> v_s;
@@ -209,20 +182,9 @@ t_config	ft_parce_config(const char *path_to_config)
 	}
 	while (ft_getserver(v_s, is))
 	{
-		int i = 1;
-		
-		std::cout << "size of the container string : " << v_s.size() << "; is the ifstream eof : " << is.eof() << std::endl;
-		std::cout << "Parce reading : " << std::endl;
-		for (std::vector<std::string>::iterator it = v_s.begin(); it != v_s.end(); it++)
-		{
-			std::cout << "\t-->line " << i << " : " << *it << std::endl;
-			i++;
-		}
-		std::cout << "-----------------------------------" << std::endl;
 		v_config.push_back(ft_full_server_config(v_s));
-		ft_print_this(v_config[v_config.size() - 1]);
 		v_s.clear();
 	}
 	is.close();
-	return (config);
+	return (v_config);
 }

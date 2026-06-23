@@ -9,7 +9,6 @@ t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config 
 		throw std::runtime_error("location variable should have path then the begining of block");
 	}
 	l.path = *it;
-	std::cout << "this -> " << *it << std::endl;
 	for (std::vector<t_location>::iterator ij = t.location.begin(); ij != t.location.end(); ij++)
 	{
 		if (l.path == ij->path)
@@ -18,16 +17,13 @@ t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config 
 		}
 	}
 	it++;
-	std::cout << "this -> " << *it << std::endl;
 	if (*it != "{")
 	{
 		throw std::runtime_error("location should have the bigining of block '{' after giving path");
 	}
 	it++;
-	std::cout << "this -> " << *it << std::endl;
 	while (*it != "}")
 	{
-		std::cout << "the current variable : " << *it << std::endl;
 		if (*it == "allow_methods")
 		{
 			it++;
@@ -50,7 +46,8 @@ t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config 
 			{
 				throw std::runtime_error("Non value gaving for cgi_ext");
 			}
-			l.cgi_ext[*it] = *(++it);
+			std::string tmp = *it;
+			l.cgi_ext[tmp] = *(++it);
 			if (*it == ";" || *it == "}")
 				throw std::runtime_error("cgi should have extention then path to the handler extention");
 			it++;
@@ -138,10 +135,11 @@ t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config 
 				throw std::runtime_error("client_max_body_size should have a dilimiter ';' after the size");
 		}
 		else {
-			std::cout << "the variable : " << *it << std::endl;
 			throw std::runtime_error("this variable is invalide in location");
 		}
 		it++;
 	}
+	if (!l.index.size())
+		l.index = t.index;
 	return (l);
 }

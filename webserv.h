@@ -55,24 +55,19 @@ typedef struct s_config {
 # include "templates/max_body.tpp"
 # include "templates/method.tpp"
 
-// *** Parcing *** //
+// NOTE: // *** Parcing *** //
 
 
 void		ft_return_code_get(std::vector< std::string >::iterator &it, t_location &t);
 void		ft_port_ip_geter(std::string &it, t_config & t);
 void		ft_error_pages_get(std::vector< std::string >::iterator &it, std::vector<std::string>::iterator &end, t_config &t);
 bool		ft_getserver(std::vector<std::string> &v_s, std::ifstream &is);
-t_config	ft_parce_config(const char *path_to_config);
+std::vector<t_config>	ft_parce_config(const char *path_to_config);
 t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config &t);
 
-
+// NOTE: this is for utils
+void		ft_print_this(t_config & t);
 int			ft_to_number(std::string &it);
 bool		ft_check_is_number(std::string &it);
-
-// template <typename T>
-// 	void		ft_get_max_body(std::string &s, T &t);
-//
-// template <typename T>
-// 	void		ft_methods_get(std::vector<std::string>::iterator & it, T & t);
 
 #endif

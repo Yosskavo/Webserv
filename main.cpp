@@ -2,7 +2,7 @@
 
 int main(int ac, char **av)
 {
-	t_config	config;
+	std::vector< t_config >	config;
 	short			exit_status = 0;
 
 	if (ac != 2)
@@ -13,12 +13,16 @@ int main(int ac, char **av)
 	try
 	{
 		config = ft_parce_config(av[1]);
-		std::cout << "Its work" << std::endl;
 	}
 	catch (const std::exception &e)
 	{
 		std::cout << e.what() << std::endl;
 		exit_status = 1;
 	}
+	// for (std::vector<t_config>::iterator it = config.begin(); it != config.end(); it++)
+	// {
+	// 	std::cout << "-----------------------------------------" << std::endl;
+	// 	ft_print_this(*it);
+	// }
 	return (exit_status);
 }
