@@ -20,7 +20,7 @@ typedef	enum e_method {
 	GET = 1,
 	POST = 2,
 	DELETE = 4,
-	UNKNOWN = 8
+	ERROR = 8
 }	t_method;
 
 typedef struct s_location {
@@ -52,12 +52,21 @@ typedef struct s_config {
 	s_config(void);
 } t_config;
 
+typedef struct s_http {
+	t_method method;
+	int		code;
+	std::string path;
+	std::string protocol;
+	std::map<std::string, std::string> headers;
+	std::string	body;
+} t_http;
+
 # include "templates/max_body.tpp"
 # include "templates/method.tpp"
 
 // NOTE: // *** Parcing *** //
 
-
+// NOTE: for the config file
 void		ft_return_code_get(std::vector< std::string >::iterator &it, t_location &t);
 void		ft_port_ip_geter(std::string &it, t_config & t);
 void		ft_error_pages_get(std::vector< std::string >::iterator &it, std::vector<std::string>::iterator &end, t_config &t);
@@ -65,9 +74,15 @@ bool		ft_getserver(std::vector<std::string> &v_s, std::ifstream &is);
 std::vector<t_config>	ft_parce_config(const char *path_to_config);
 t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config &t);
 
+// NOTE: for the http request
+t_http	ft_handle_http_request(std::string http_str, t_config &server_config);
+
 // NOTE: this is for utils
 void		ft_print_this(t_config & t);
 int			ft_to_number(std::string &it);
 bool		ft_check_is_number(std::string &it);
+std::vector<std::string> ft_split(std::string &str, std::string delimiter);
+
+
 
 #endif
