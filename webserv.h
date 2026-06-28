@@ -76,6 +76,7 @@ t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config 
 
 // NOTE: for the http request
 t_http	ft_handle_http_request(std::string http_str, t_config &server_config);
+void	ft_handle_method(std::string method_str, t_config &server_config);
 
 // NOTE: this is for utils
 void		ft_print_this(t_config & t);
