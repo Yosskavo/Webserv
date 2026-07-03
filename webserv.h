@@ -62,20 +62,27 @@ typedef struct s_http {
 } t_http;
 
 typedef enum	s_error_flags {
+	NONE,
 	MISSING_METHOD,
+	MISSING_PATH,
+	MISSING_PROTOCOL,
+	MISSING_KEY_VALUE_IN_HEADER,
+	MISSING_VERIOSN,
+	MISSING_KEY_IN_HEADER,
+	MISSING_VALUE_IN_HEADER,
 	ALOT_OF_ARGUMENT_IN_METHOD_LINE,
 	ALOT_OF_ARGUMENT_IN_PROTOCOLO_LINE,
 } t_error_flags;
 
 typedef struct s_string_split_http
 {
-	bool								flag;
 	t_error_flags						error;
 	std::string							method;
 	std::string							version;
 	std::string							protocol;
 	std::string							path;
 	std::map<std::string, std::string>	header;
+	// TODO: create a constructor for this struct
 } t_string_split_http;
 
 # include "templates/max_body.tpp"
@@ -113,5 +120,8 @@ bool		ft_check_is_number(std::string &it);
 std::vector<std::string> ft_split(std::string &str, std::string delimiter);
 void ft_get_method_line_info(std::string &s, t_string_split_http& splited_string);
 t_string_split_http ft_split_request(std::string &s);
+void ft_check_headers(t_string_split_http &s);
+
+
 
 #endif

@@ -16,5 +16,6 @@ t_string_split_http ft_split_request(std::string &s)
 		 i = it->find(":");
 		 splited_string.header[it->substr(0, i)] = it->substr(i);
 	 }
+	 ft_check_headers(splited_string);
 	 return (splited_string);
 }
