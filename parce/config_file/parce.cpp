@@ -1,6 +1,4 @@
-#include "../webserv.h"
-#include <csetjmp>
-#include <cmath>
+#include "../../webserv.h"
 
 void	ft_handle_ather(std::vector<std::string>::iterator &it, std::vector<std::string>::iterator &end, t_config &t)
 {

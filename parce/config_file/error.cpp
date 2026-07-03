@@ -1,4 +1,4 @@
-#include "../webserv.h"
+#include "../../webserv.h"
 
 void ft_error_pages_get(std::vector< std::string >::iterator &it, std::vector<std::string>::iterator &end, t_config &t)
 {

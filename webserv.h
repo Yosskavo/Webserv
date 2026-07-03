@@ -61,6 +61,23 @@ typedef struct s_http {
 	std::string	body;
 } t_http;
 
+typedef enum	s_error_flags {
+	MISSING_METHOD,
+	ALOT_OF_ARGUMENT_IN_METHOD_LINE,
+	ALOT_OF_ARGUMENT_IN_PROTOCOLO_LINE,
+} t_error_flags;
+
+typedef struct s_string_split_http
+{
+	bool								flag;
+	t_error_flags						error;
+	std::string							method;
+	std::string							version;
+	std::string							protocol;
+	std::string							path;
+	std::map<std::string, std::string>	header;
+} t_string_split_http;
+
 # include "templates/max_body.tpp"
 # include "templates/method.tpp"
 
@@ -75,7 +92,18 @@ std::vector<t_config>	ft_parce_config(const char *path_to_config);
 t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config &t);
 
 // NOTE: for the http request
-t_http	ft_handle_http_request(std::string http_str, t_config &server_config);
+/**
+ * @brief  this function handle the request 
+ * 	if the client just send the request the http_info will get full by the infos giving from http_str
+ * 	else if the client send body it will get parse and treated depend on http_info and server_config
+ * 	else a flag error will set with a value to ditterment witch error happen and description
+ *
+ * @param a string to the content send by clinet (might be a http request or body)
+ * @param a reference to the t_config to get the infos needed to use them in parce the http request
+ * @param a reference to the t_http to full or get some infos about request
+ * @return 
+ */
+void	ft_handle_http_request(std::string http_str, t_config &server_config, t_http & http_info);
 void	ft_handle_method(std::string method_str, t_config &server_config);
 
 // NOTE: this is for utils
@@ -83,7 +111,7 @@ void		ft_print_this(t_config & t);
 int			ft_to_number(std::string &it);
 bool		ft_check_is_number(std::string &it);
 std::vector<std::string> ft_split(std::string &str, std::string delimiter);
-
-
+void ft_get_method_line_info(std::string &s, t_string_split_http& splited_string);
+t_string_split_http ft_split_request(std::string &s);
 
 #endif

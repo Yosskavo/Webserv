@@ -5,6 +5,7 @@ C_BLUE   = \033[0;34m
 C_RED    = \033[0;31m
 C_RESET  = \033[0m
 C_PURPLE = \033[1;35m
+SHELL	 = /bin/zsh
 
 NAME = webserv
 CC = c++

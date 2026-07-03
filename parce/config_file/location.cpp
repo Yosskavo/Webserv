@@ -1,4 +1,4 @@
-#include "../webserv.h"
+#include "../../webserv.h"
 
 t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config &t)
 {
