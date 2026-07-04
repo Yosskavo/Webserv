@@ -82,7 +82,7 @@ typedef struct s_string_split_http
 	std::string							protocol;
 	std::string							path;
 	std::map<std::string, std::string>	header;
-	// TODO: create a constructor for this struct
+	s_string_split_http();
 } t_string_split_http;
 
 # include "templates/max_body.tpp"
@@ -110,7 +110,7 @@ t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config 
  * @param a reference to the t_http to full or get some infos about request
  * @return 
  */
-void	ft_handle_http_request(std::string http_str, t_config &server_config, t_http & http_info);
+t_http	ft_handle_http_request(std::string http_str, t_config &server_config);
 void	ft_handle_method(std::string method_str, t_config &server_config);
 
 // NOTE: this is for utils

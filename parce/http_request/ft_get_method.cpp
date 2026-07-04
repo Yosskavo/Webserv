@@ -4,7 +4,6 @@ void ft_get_method_line_info(std::string &s, t_string_split_http& splited_string
 {
 	std::vector<std::string> v_str;
 
-	splited_string.error = NONE;
 	v_str = ft_split(s, " ");
 	if (v_str.size() >= 1)
 		splited_string.method = v_str[0];
