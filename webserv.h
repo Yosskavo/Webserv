@@ -23,6 +23,8 @@ typedef	enum e_method {
 	UNKNOWN = 8
 }	t_method;
 
+
+
 typedef struct s_location {
 	std::string path;
 	short		allow_method;
