@@ -36,7 +36,7 @@ typedef struct s_location {
 	std::string					upload_store;
 	std::map<std::string, std::string>	cgi_ext;
 	size_t						client_max_body_size;
-	 s_location(struct s_config &s);
+	s_location(struct s_config &s);
 }	t_location;
 
 typedef struct s_config {

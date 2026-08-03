@@ -9,16 +9,19 @@
 #include <poll.h>
 #include <cstring>
 #include <cerrno>
-
+#include <sys/wait.h>
 
 enum ClientState
 {
+
     READING_HEADERS,
     READING_BODY,
-    SENDING,
-    RUNNING_CGI,
+    WRITING_RESPONSE,
+	DEAD,
+    WAITING_CGI,
     ROUTING,
     DONE
+
 };
 
 
@@ -28,13 +31,29 @@ typedef struct s_request
     std::string method;
     std::string target;
     std::string version;
+    std::string query_string;
+    std::string server_name;
     std::map<std::string, std::string> cookies;
     std::map<std::string, std::string> headers;
-    std::string body;
+    std::string body;  
     size_t content_length;
     size_t body_received;
+    s_request(): content_length(0),body_received(0){}
 
 }t_request;
+
+typedef struct s_respond
+{
+    int status_code;
+    std::string status;
+    std::map<std::string, std::string> headers;
+    std::string body;
+    std::string outbuf;
+    size_t sent;
+    s_respond() : status_code(0), sent(0){}
+
+}t_response;
+
 
 typedef struct s_client
 {
@@ -43,20 +62,25 @@ typedef struct s_client
     std::string inbuf;
     std::string outbuf;
     t_request request;
+    t_response response;
+    bool keep_alive;
     t_config *server;
     t_location *location;
 
 }t_client;
 
 
-struct s_CgiProcess
+typedef struct s_CgiProcess
 {
-    int pid;
+    pid_t pid;
     int in_fd;              
     int out_fd;              
     size_t to_child;    // bytes still to write
     size_t from_child;         // bytes read so far
     int client_fd;
+    bool stdin_closed;
+    bool stdout_closed;
+    std::string outbuf;
     //started_at
 }t_CgiProcess;
 
@@ -69,6 +93,8 @@ private:
     std::vector<struct pollfd> listeners;
     std::map<std::pair<std::string, size_t> , int> know_exist;
     std::map<int, t_client> clients;
+    std::map<pid_t, t_CgiProcess> cgis;
+    std::map<int , pid_t> fd_to_pid;
 
 public:
     server();
@@ -78,7 +104,14 @@ public:
     void accept_new_clients(int listener_fd);
     void handle_client_read(int fd);
     void handle_client_write(int fd);
-    void cleaning_client(int fd);
+    void cleaning_client(std::map<int, t_client>::iterator it);
+    void start_cgi(t_client& client, std::string cgi_handler);
+    void handle_cgi_write(int fd);
+    void handle_cgi_read(int fd);
+    void cleaning_cgi(int fd);
+    void route(t_client& client);
+    void set_events(int fd, short events);
+    void build_response(t_client& client);
 };
 
 
