@@ -10,6 +10,9 @@
 #include <cstring>
 #include <cerrno>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
 
 enum ClientState
 {
@@ -112,6 +115,12 @@ public:
     void route(t_client& client);
     void set_events(int fd, short events);
     void build_response(t_client& client);
+    void handle_get(t_client& client);
+    void serve_file(t_client& client, const std::string& file_path);
+    bool get_index(t_client& client);
+    void generate_index(t_client& client, const std::string& file_path); 
+    void handle_post(t_client& client);
+    void handle_delete(t_client& client);
 };
 
 
