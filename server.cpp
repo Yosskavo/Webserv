@@ -202,7 +202,7 @@ char **build_env(t_client& client)
     env[6] = strdup(tmp.c_str());
     tmp = "SERVER_NAME=" + client.request.server_name;
     env[7] = strdup(tmp.c_str());
-    tmp = "SERVER_PORT=" + to_string(client.server->port);
+    tmp = "SERVER_PORT=" + to_string(client.request.server->port);
     env[8] = strdup(tmp.c_str());
     env[9] = strdup("GATEWAY_INTERFACE=CGI/1.1");
     env[10] = NULL;
@@ -485,7 +485,7 @@ void server::handle_post(t_client& client)
 
 void server::route(t_client& client)
 {
-    t_config* srv = client.server;
+    t_config* srv = client.request.server;
     t_location* loc = choose_location(srv, client.request.target);
     if(loc == NULL)
     { 

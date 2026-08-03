@@ -36,6 +36,7 @@ typedef struct s_request
     std::string version;
     std::string query_string;
     std::string server_name;
+    t_config *server;
     std::map<std::string, std::string> cookies;
     std::map<std::string, std::string> headers;
     std::string body;  
