@@ -350,7 +350,7 @@ bool server::get_index(t_client& client)
 
 void server::serve_file(t_client& client, const std::string& file_path)
 {
-    std::ifstream file(file_path.c_str(), std::ios::binary);
+    std::ifstream file(file_path.c_str(), std::ios::in | std::ios::binary);
     if(!file.is_open())
     {
         // 403 Forbidden
@@ -364,6 +364,7 @@ void server::serve_file(t_client& client, const std::string& file_path)
     build_response(client);
     client.state = WRITING_RESPONSE;
     set_events(client.fd, POLLOUT);
+    file.close();
 }
 
 void server::generate_index(t_client& client, const std::string& file_path)
@@ -454,19 +455,33 @@ void server::handle_delete(t_client& client)
     }
     client.response.status_code = 204;
     client.response.status = "No Content";
-    client.response.body.clear();
-
+    client.response.body = "File deleted!";
+    client.response.headers["Content-Type"] = "text/plain";
     build_response(client);
-
     client.state = WRITING_RESPONSE;
     set_events(client.fd, POLLOUT);
 }
 
 void server::handle_post(t_client& client)
 {
-    
+    std::string file_path = client.location->root_path + client.request.target;
+    std::ofstream file(file_path.c_str(), std::ios::out | std::ios::binary);
+    if(!file.is_open())
+    {
+        // 500
+        return;
+    }
+    file << client.request.body;
+    file.close();
+       
+    client.response.status_code = 201;
+    client.response.status = "Created";
+    client.response.body = "File uploaded successfully!";
+    client.response.headers["Content-Type"] = "text/plain";
+    build_response(client);
+    client.state = WRITING_RESPONSE;
+    set_events(client.fd, POLLOUT);
 }
-
 
 void server::route(t_client& client)
 {
