@@ -514,7 +514,10 @@ void server::route(t_client& client)
     if(client.request.method == "GET")
         handle_get(client);
     else if(client.request.method == "POST")
-        handle_post(cient);
+        handle_post(client);
+    else if (client.request.method == "DELETE")
+        handle_delete(client);
+    return;
 }
 
 
