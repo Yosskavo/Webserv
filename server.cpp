@@ -9,6 +9,62 @@ void print_error_exit(std::string src,std::vector<struct pollfd>& listener)
     exit(1);
 }
 
+
+void server::queue_error(t_client& client, int code)
+{
+    std::string path;
+    if(client.server->error_pages.count(code))
+    {
+        if(client.location)
+            path = client.location->root_path + client.server->error_pages[code];
+        else
+            path = client.server->root_path + client.server->error_pages[code];
+        
+        serve_file(client, path, code);
+        return;
+    }
+    std::ostringstream html;
+
+    html << "<html>";
+    html << "<head><title>";
+    html << code << " ";
+    html << reason_sentence(code);
+    html << "</title></head>";
+
+    html << "<body>";
+
+    html << "<h1>";
+    html << code << " ";
+    html << reason_sentence(code);
+    html << "</h1>";
+
+    html << "</body></html>";
+
+    client.response.status_code = code;
+    client.response.status = reason_sentence(code);
+    client.response.body = html.str();
+    client.response.headers["Content-Type"] = "text/html";
+
+    build_response(client);
+    client.state = WRITING_RESPONSE;
+    set_events(client.fd, POLLOUT);
+}
+
+void server::queue_redirect(t_client& client, const std::string& location, int code)
+{
+    client.response.status_code = code;
+    client.response.status = reason_sentence(code);
+    client.response.body.clear();
+    client.response.headers["Location"] = location;
+
+    build_response(client);
+
+    client.state = WRITING_RESPONSE;
+
+    set_events(client.fd, POLLOUT);
+}
+
+
 uint32_t ip_convert(std::string& ip)
 {
     if(ip == "127.0.0.1")
@@ -22,9 +78,10 @@ void server::init(std::vector<t_config>& list)
     signal(SIGPIPE, SIG_IGN);
     for(size_t i = 0; i < list.size(); i++)
     {
-        if(know_exist.count({list[i].ip, list[i].port}))
+        std::pair<std::string, int> key(list[i].ip, list[i].port);
+        if(know_exist.count(key))
         {
-            int fd = know_exist[{list[i].ip, list[i].port}];
+            int fd = know_exist[key];
             servers[fd].push_back(list[i]);
         }
         else
@@ -50,7 +107,7 @@ void server::init(std::vector<t_config>& list)
             p.events = POLLIN;
             p.revents = 0;
             listeners.push_back(p);
-            know_exist[{list[i].ip, list[i].port}] = fd;
+            know_exist[key] = fd;
             servers[fd].push_back(list[i]);
         }
     }  
@@ -77,7 +134,8 @@ void server::accept_new_clients(int listener_fd)
     t_client c;
     c.fd = client;
     c.state = READING_HEADERS;
-    c.server = servers[listener_fd].data();
+    c.server_fd = listener_fd;
+    c.server = &servers[listener_fd][0];
     clients[client] = c;
 }
 
@@ -224,7 +282,7 @@ void server::start_cgi(t_client& client, std::string cgi_handler)
     
     if(pipe(std_out) < 0)
     {
-        // queue 500 Internal Server Error
+        queue_error(client, 500);
         return;
     }
 
@@ -234,7 +292,7 @@ void server::start_cgi(t_client& client, std::string cgi_handler)
         {
             close(std_out[0]);
             close(std_out[1]);
-            // queue 500 Internal Server Error
+            queue_error(client, 500);
             return;
         }
     }
@@ -250,7 +308,7 @@ void server::start_cgi(t_client& client, std::string cgi_handler)
             close(std_in[0]);
             close(std_in[1]);
         }
-        // queue 500 Internal Server Error
+        queue_error(client, 500);
         return;
     }
     if(pid == 0)
@@ -307,6 +365,7 @@ void server::start_cgi(t_client& client, std::string cgi_handler)
     listeners.push_back(p);
     cgis[pid] = c;
     client.state = WAITING_CGI;
+    set_events(client.fd, 0);
 }
 
 std::string getContentType(const std::string& target)
@@ -336,30 +395,51 @@ bool server::get_index(t_client& client)
 {
     struct stat st;
 
-    for(int i = 0; i < client.location->index.size(); i++)
+    for(size_t i = 0; i < client.location->index.size(); i++)
     {
         std::string file = client.location->root_path + client.request.target + "/" + client.location->index[i];
         if(stat(file.c_str(), &st) == 0)
         {
-            serve_file(client, file);
+            serve_file(client, file, 200);
             return true;
         }
     }
     return false;
 }
 
-void server::serve_file(t_client& client, const std::string& file_path)
+std::string server::reason_sentence(int code)
+{
+    switch(code)
+    {
+        case 200: return "OK";
+        case 201: return "Created";
+        case 204: return "No Content";
+        case 301: return "Moved Permanently";
+        case 302: return "Found";
+        case 400: return "Bad Request";
+        case 403: return "Forbidden";
+        case 404: return "Not Found";
+        case 405: return "Method Not Allowed";
+        case 413: return "Payload Too Large";
+        case 500: return "Internal Server Error";
+        case 501: return "Not Implemented";
+        case 502: return "Bad Gateway";
+        default:  return "Unknown";
+    }
+}
+
+void server::serve_file(t_client& client, const std::string& file_path, int code)
 {
     std::ifstream file(file_path.c_str(), std::ios::in | std::ios::binary);
     if(!file.is_open())
     {
-        // 403 Forbidden
-         return;
+        queue_error(client, 403);
+        return;
     }
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     client.response.body = content;
-    client.response.status_code = 200;
-    client.response.status = "OK";
+    client.response.status_code = code;
+    client.response.status = reason_sentence(code);
     client.response.headers["Content-Type"] = getContentType(file_path);
     build_response(client);
     client.state = WRITING_RESPONSE;
@@ -372,7 +452,7 @@ void server::generate_index(t_client& client, const std::string& file_path)
     DIR *dir = opendir(file_path.c_str());
     if(!dir)
     {
-        // 403
+        queue_error(client, 403);
         return;
     }
     std::ostringstream html;
@@ -409,7 +489,7 @@ void server::handle_get(t_client& client)
 
     if(stat(file_path.c_str(), &file_stat) < 0)
     {
-        // 404 Not found
+        queue_error(client, 404);
         return;
     }
     if(S_ISDIR(file_stat.st_mode))
@@ -421,35 +501,37 @@ void server::handle_get(t_client& client)
             generate_index(client, file_path);
             return;
         }
-        // 403 Forbidden
+        queue_error(client, 403);
         return;
     }
-    serve_file(client, file_path);
+    serve_file(client, file_path, 200);
 }
 
 void server::handle_delete(t_client& client)
 {
     struct stat st;
-    std::string file = client.location->root_path + client.request.target;
+    std::string relative = client.request.target.substr(client.location->path.size());
+    std::string root_location =  client.location->root_path.substr(1);
+    std::string file = client.server->root_path + root_location + "/" + relative;
     if(stat(file.c_str(), &st) == -1)
     {
-        // 404 Not Found
+        queue_error(client, 404);
         return;
     }
     if(S_ISDIR(st.st_mode))
     {
-        // 403
+        queue_error(client, 403);
         return;
     }
     if(remove(file.c_str()) != 0)
     {
         if(errno == EACCES)
         {
-            // 403
+            queue_error(client, 403);
         }
         else
         {
-            //500
+            queue_error(client, 500);
         }
         return;
     }
@@ -464,11 +546,13 @@ void server::handle_delete(t_client& client)
 
 void server::handle_post(t_client& client)
 {
-    std::string file_path = client.location->root_path + client.request.target;
+    std::string relative = client.request.target.substr(client.location->path.size());
+    std::string root_location =  client.location->root_path.substr(1);
+    std::string file_path = client.server->root_path + root_location + "/" + relative;
     std::ofstream file(file_path.c_str(), std::ios::out | std::ios::binary);
     if(!file.is_open())
     {
-        // 500
+        queue_error(client, 500);
         return;
     }
     file << client.request.body;
@@ -489,20 +573,21 @@ void server::route(t_client& client)
     t_location* loc = choose_location(srv, client.request.target);
     if(loc == NULL)
     { 
-        // queue_error(404) // NOT FOUND;
+        queue_error(client, 404);
         return;
     }
     client.location = loc;
     if(!is_method_allow(loc,client.request.method))
     {
-        // queue_error(405) Method not allow;
+        queue_error(client, 405);
         return; 
     }
     if(!loc->return_path.empty())
     {
         int code = loc->return_path.begin()->first;
         std::string path = loc->return_path.begin()->second;
-        //queue_redirect;
+        queue_redirect(client, path, code);
+        return;
     }
     std::string ext = get_extention(client.request.target);
     if(loc->cgi_ext.count(ext))
@@ -541,17 +626,16 @@ void server::handle_client_read(int fd)
     client.inbuf.append(buffer,n);
     if(client.state == READING_HEADERS)
     {
-        size_t p = client.inbuf.find("\r\n\r\n");
+        size_t p = client.inbuf.find("\r\n\r\n");     
         if(p != std::string::npos)
         {
-            // call function parsing request;
-			// if(!pars_request)
-			// {
-			//		prepare 400 respond
-			//		state = writing_respond
-			//		return;
-			// }
-			// call function chose_server(client);
+            
+			 if(!parse_request(client.request, client.inbuf))
+			{
+				queue_error(client, 400);
+				return;
+			}
+			choose_server(client);
             client.inbuf.erase(client.inbuf.begin(), client.inbuf.begin() + (p + 4));
             if(client.request.method == "POST")
                 client.state = READING_BODY;
@@ -565,8 +649,7 @@ void server::handle_client_read(int fd)
     {
         size_t n = client.inbuf.size();
         if(n > client.server->client_max_body_size)
-            // make a respond error code 413 Payload Too Large
-            ;
+            queue_error(client, 413);
         if(n >= client.request.content_length)
         {
             client.request.body = client.inbuf.substr(0, client.request.content_length);
@@ -578,9 +661,150 @@ void server::handle_client_read(int fd)
         route(client);
 }
 
-bool parse_cgi(std::string cgi_out, t_response& client)
+bool parse_cgi(const std::string &out, t_response &res)
 {
+    size_t end = out.find("\r\n\r\n");
+    size_t sep_len = 4;
 
+    if (end == std::string::npos)
+    {
+        end = out.find("\n\n");
+        sep_len = 2;
+    }
+
+    if (end == std::string::npos)
+        return false;
+
+    std::string headers = out.substr(0, end);
+
+    res.body = out.substr(end + sep_len);
+
+    std::istringstream ss(headers);
+
+    std::string line;
+
+    res.status_code = 200;
+    res.status = "OK";
+
+    while (std::getline(ss, line))
+    {
+        if (!line.empty() && line[line.size()-1] == '\r')
+            line.erase(line.size()-1);
+
+        size_t pos = line.find(':');
+
+        if (pos == std::string::npos)
+            continue;
+
+        std::string key = line.substr(0, pos);
+        std::string value = line.substr(pos + 1);
+
+        while (!value.empty() && value[0] == ' ')
+            value.erase(0,1);
+
+        if (key == "Status")
+        {
+            std::stringstream tmp(value);
+
+            tmp >> res.status_code;
+
+            std::getline(tmp, res.status);
+
+            if (!res.status.empty() && res.status[0] == ' ')
+                res.status.erase(0,1);
+        }
+        else
+        {
+            res.headers[key] = value;
+        }
+    }
+
+    return true;
+}
+
+bool server::parse_request(t_request &req, const std::string &buffer)
+{
+    std::istringstream ss(buffer);
+
+    ss >> req.method;
+    ss >> req.target;
+    ss >> req.version;
+
+    std::string line;
+    std::getline(ss, line); // consume remainder
+
+    while (std::getline(ss, line))
+    {
+        if (line == "\r" || line.empty())
+            break;
+
+        size_t pos = line.find(':');
+
+        if (pos == std::string::npos)
+            continue;
+
+        std::string key = line.substr(0, pos);
+
+        std::string value = line.substr(pos + 1);
+
+        while (!value.empty() && value[0] == ' ')
+            value.erase(0, 1);
+
+        if (!value.empty() && value[value.size() - 1] == '\r')
+            value.erase(value.size() - 1);
+
+        req.headers[key] = value;
+    }
+
+    std::ostringstream body;
+
+    while (std::getline(ss, line))
+        body << line << "\n";
+
+    req.body = body.str();
+
+    if (req.headers.count("Content-Length"))
+        req.content_length = atoi(req.headers["Content-Length"].c_str());
+    else
+        req.content_length = 0;
+
+    size_t q = req.target.find('?');
+
+    if (q != std::string::npos)
+    {
+        req.query_string = req.target.substr(q + 1);
+        req.target = req.target.substr(0, q);
+    }
+
+    return true;
+}
+
+void server::choose_server(t_client &client)
+{
+    std::string host = client.request.headers["Host"];
+
+    // remove optional :port
+    size_t pos = host.find(':');
+    if (pos != std::string::npos)
+        host.erase(pos);
+
+    std::vector<t_config> &v = servers[client.server_fd];
+
+    for (size_t i = 0; i < v.size(); i++)
+    {
+        for (size_t j = 0; j < v[i].server_name.size(); j++)
+        {
+            if (v[i].server_name[j] == host)
+            {
+                client.request.server = &v[i];
+                client.request.server_name = host;
+                return;
+            }
+        }
+    }
+    client.request.server = client.server;
+    // no matching Host → keep the default server
+    client.request.server_name = client.server->server_name[0];
 }
 
 void server::set_events(int fd, short events)
@@ -609,7 +833,7 @@ void server::handle_cgi_read(int fd)
         cleaning_cgi(fd);
         fd_to_pid.erase(fd);
         cgi.stdout_closed = true;
-        // 502 Bad Gateway
+        queue_error(client, 502);
         return;
     }
     if(n == 0)
@@ -619,11 +843,12 @@ void server::handle_cgi_read(int fd)
         cgi.stdout_closed = true;
         if (!parse_cgi(cgi.outbuf, client.response))
         {
-            // queue 502 Bad Gateway
+            queue_error(client, 502);
             return;
         }
+        build_response(client);
         client.state = WRITING_RESPONSE;
-        set_events(fd, POLLOUT);
+        set_events(client.fd, POLLOUT);
         return;
     }
     if(n > 0)
@@ -643,7 +868,7 @@ void server::handle_cgi_write(int fd)
         cleaning_cgi(fd);
         fd_to_pid.erase(fd);
         cgi.stdin_closed = true;
-        // queue 500
+        queue_error(client, 500);
         return;
     }
     client.request.body.erase(0, n);
@@ -748,19 +973,33 @@ void server::run()
 					continue;
 				}
 				if(listeners[i].revents & POLLIN)
-                    handle_client_read(listeners[i].fd);
+				{
+					if(clients[listeners[i].fd].state != WAITING_CGI)
+						handle_client_read(listeners[i].fd);
+				}
                 if(listeners[i].revents & POLLHUP)
                     clients[listeners[i].fd].state = DEAD;
                 if (listeners[i].revents &  POLLOUT)
                     handle_client_write(listeners[i].fd);
 				continue;
             }
-            else if(cgis.count(fd_to_pid[listeners[i].fd]))
+            else if(fd_to_pid.count(listeners[i].fd) && cgis.count(fd_to_pid[listeners[i].fd]))
             {
-                if(listeners[i].revents & POLLIN)
-                    handle_cgi_read(fd_to_pid[listeners[i].fd]);
+                if(listeners[i].revents & (POLLERR | POLLNVAL))
+                {
+                    int fd = listeners[i].fd;
+                    t_CgiProcess& cgi = cgis[fd_to_pid[fd]];
+                    t_client& client = clients[cgi.client_fd];
+                    if (fd == cgi.in_fd) cgi.stdin_closed = true;
+                    if (fd == cgi.out_fd) cgi.stdout_closed = true;
+                    cleaning_cgi(fd);
+                    fd_to_pid.erase(fd);
+                    queue_error(client, 500);
+                }
+                else if(listeners[i].revents & (POLLIN | POLLHUP))
+                    handle_cgi_read(listeners[i].fd);
                 else if(listeners[i].revents & POLLOUT)
-                    handle_cgi_write(fd_to_pid[listeners[i].fd]);
+                    handle_cgi_write(listeners[i].fd);
                 continue;
             } 
 		}
@@ -783,7 +1022,7 @@ void server::run()
             {
                 std::map<pid_t, t_CgiProcess>::iterator tmp = t;
                 t++;
-                waitpid(t->second.pid, NULL, WNOHANG);
+                waitpid(tmp->second.pid, NULL, WNOHANG);
                 cgis.erase(tmp);
             }
             else

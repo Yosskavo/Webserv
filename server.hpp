@@ -39,10 +39,10 @@ typedef struct s_request
     t_config *server;
     std::map<std::string, std::string> cookies;
     std::map<std::string, std::string> headers;
-    std::string body;  
+    std::string body;
     size_t content_length;
     size_t body_received;
-    s_request(): content_length(0),body_received(0){}
+    s_request(): server(NULL), content_length(0),body_received(0){}
 
 }t_request;
 
@@ -68,8 +68,11 @@ typedef struct s_client
     t_request request;
     t_response response;
     bool keep_alive;
-    t_config *server;
+    int server_fd;
+    t_config* server;
     t_location *location;
+
+    s_client() : fd(-1), state(READING_HEADERS), keep_alive(false), server_fd(-1), server(NULL), location(NULL) {}
 
 }t_client;
 
@@ -101,8 +104,8 @@ private:
     std::map<int , pid_t> fd_to_pid;
 
 public:
-    server();
-    ~server();
+    server(){};
+    ~server(){};
     void init(std::vector<t_config>& list);
     void run();
     void accept_new_clients(int listener_fd);
@@ -117,11 +120,16 @@ public:
     void set_events(int fd, short events);
     void build_response(t_client& client);
     void handle_get(t_client& client);
-    void serve_file(t_client& client, const std::string& file_path);
+    void serve_file(t_client& client, const std::string& file_path, int code);
     bool get_index(t_client& client);
     void generate_index(t_client& client, const std::string& file_path); 
     void handle_post(t_client& client);
     void handle_delete(t_client& client);
+    void queue_error(t_client& client, int code);
+    void queue_redirect(t_client& client,const std::string& location, int code);
+    void choose_server(t_client& client);
+    std::string reason_sentence(int code);
+    bool parse_request(t_request &req, const std::string &buffer);
 };
 
 

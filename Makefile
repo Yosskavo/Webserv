@@ -8,8 +8,8 @@ C_PURPLE = \033[1;35m
 
 NAME = webserv
 CC = c++
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -I .
-SRC = parce/error.cpp parce/location.cpp main.cpp parce/parce.cpp parce/server.cpp parce/listen.cpp struct/location.cpp  utils/numbers_handle.cpp parce/return.cpp utils/print.cpp
+CFLAGS = -g3 -Wall -Wextra -Werror -std=c++98 -I .
+SRC = parce/error.cpp parce/location.cpp main.cpp parce/parce.cpp parce/server.cpp parce/listen.cpp struct/location.cpp  utils/numbers_handle.cpp parce/return.cpp utils/print.cpp server.cpp
 OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)
