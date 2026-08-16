@@ -663,120 +663,27 @@ void server::handle_client_read(int fd)
 
 bool parse_cgi(const std::string &out, t_response &res)
 {
-    size_t end = out.find("\r\n\r\n");
-    size_t sep_len = 4;
 
-    if (end == std::string::npos)
-    {
-        end = out.find("\n\n");
-        sep_len = 2;
-    }
-
-    if (end == std::string::npos)
-        return false;
-
-    std::string headers = out.substr(0, end);
-
-    res.body = out.substr(end + sep_len);
-
-    std::istringstream ss(headers);
-
-    std::string line;
-
-    res.status_code = 200;
-    res.status = "OK";
-
-    while (std::getline(ss, line))
-    {
-        if (!line.empty() && line[line.size()-1] == '\r')
-            line.erase(line.size()-1);
-
-        size_t pos = line.find(':');
-
-        if (pos == std::string::npos)
-            continue;
-
-        std::string key = line.substr(0, pos);
-        std::string value = line.substr(pos + 1);
-
-        while (!value.empty() && value[0] == ' ')
-            value.erase(0,1);
-
-        if (key == "Status")
-        {
-            std::stringstream tmp(value);
-
-            tmp >> res.status_code;
-
-            std::getline(tmp, res.status);
-
-            if (!res.status.empty() && res.status[0] == ' ')
-                res.status.erase(0,1);
-        }
-        else
-        {
-            res.headers[key] = value;
-        }
-    }
-
-    return true;
+	return (true);
 }
 
 bool server::parse_request(t_request &req, const std::string &buffer)
 {
-    std::istringstream ss(buffer);
+	std::string tmp;
+	size_t	pos;
 
-    ss >> req.method;
-    ss >> req.target;
-    ss >> req.version;
-
-    std::string line;
-    std::getline(ss, line); // consume remainder
-
-    while (std::getline(ss, line))
-    {
-        if (line == "\r" || line.empty())
-            break;
-
-        size_t pos = line.find(':');
-
-        if (pos == std::string::npos)
-            continue;
-
-        std::string key = line.substr(0, pos);
-
-        std::string value = line.substr(pos + 1);
-
-        while (!value.empty() && value[0] == ' ')
-            value.erase(0, 1);
-
-        if (!value.empty() && value[value.size() - 1] == '\r')
-            value.erase(value.size() - 1);
-
-        req.headers[key] = value;
-    }
-
-    std::ostringstream body;
-
-    while (std::getline(ss, line))
-        body << line << "\n";
-
-    req.body = body.str();
-
-    if (req.headers.count("Content-Length"))
-        req.content_length = atoi(req.headers["Content-Length"].c_str());
-    else
-        req.content_length = 0;
-
-    size_t q = req.target.find('?');
-
-    if (q != std::string::npos)
-    {
-        req.query_string = req.target.substr(q + 1);
-        req.target = req.target.substr(0, q);
-    }
-
-    return true;
+	pos = buffer.find("\r\n");
+	if (pos == std::string::npos)
+		return (false);
+	tmp = buffer.substr(0, pos);
+	if (!ft_method(req, tmp))
+		return (false);
+	tmp = buffer.substr(pos + 2);
+	if (!ft_headers(req, tmp))
+		return (false);
+	req.body = tmp;
+	req.body_received = tmp.length();
+	return (true);
 }
 
 void server::choose_server(t_client &client)

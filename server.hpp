@@ -27,8 +27,6 @@ enum ClientState
 
 };
 
-
-
 typedef struct s_request
 {
     std::string method;
@@ -57,7 +55,6 @@ typedef struct s_respond
     s_respond() : status_code(0), sent(0){}
 
 }t_response;
-
 
 typedef struct s_client
 {
@@ -134,6 +131,11 @@ public:
 
 
 
+std::vector<std::string> ft_split(const std::string & str, const std::string &dilm);
+bool	ft_method(t_request & req, const std::string &buffer);
+bool	ft_headers(t_request & req, std::string & s);
+std::map<std::string, std::string> ft_cookies(const std::string s);
+std::string	ft_trim(std::string s, char c);
 
 
 #endif
