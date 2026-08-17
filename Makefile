@@ -9,7 +9,25 @@ C_PURPLE = \033[1;35m
 NAME = webserv
 CC = c++
 CFLAGS = -g3 -Wall -Wextra -Werror -std=c++98 -I .
-SRC = parce/error.cpp parce/location.cpp main.cpp parce/parce.cpp parce/server.cpp parce/listen.cpp struct/location.cpp  utils/numbers_handle.cpp parce/return.cpp utils/print.cpp server.cpp
+
+SRC = main.cpp \
+      server.cpp \
+      struct/location.cpp \
+      parce/file/error.cpp \
+      parce/file/listen.cpp \
+      parce/file/location.cpp \
+      parce/file/parce.cpp \
+      parce/file/return.cpp \
+      parce/file/server.cpp \
+      parce/request/cookies.cpp \
+      parce/request/headers.cpp \
+      parce/request/method.cpp \
+      parce/cgi/cgi.cpp \
+      utils/numbers_handle.cpp \
+      utils/print.cpp \
+      utils/split.cpp \
+      utils/trim.cpp
+
 OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)
@@ -19,7 +37,7 @@ $(NAME): $(OBJ)
 	@$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
 	@echo "$(C_GREEN) 󰙴 Done compiling!$(C_RESET)"
 
-%.o: %.cpp webserv.h
+%.o: %.cpp webserv.h server.hpp
 	@echo "$(C_YELLOW) 󰔚 Compiling $<...$(C_RESET)"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
