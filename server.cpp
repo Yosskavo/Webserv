@@ -663,7 +663,29 @@ void server::handle_client_read(int fd)
 
 bool parse_cgi(const std::string &out, t_response &res)
 {
+	std::string tmp;
+	std::string delim = "\r\n";
+	size_t		pos;
+	int			pos_len = 4;
 
+	res.status_code = 200;
+	res.status = "OK";
+	pos = out.find("\r\n\r\n");
+	if (pos == std::string::npos)
+	{
+		pos = out.find("\n\n");
+		if (pos == std::string::npos)
+			return (false);
+		pos_len = 2;
+		delim = "\n";
+	}
+	tmp = out.substr(0, pos);
+	res.body = out.substr(pos + pos_len);
+	if (tmp != "")
+	{
+		if (!ft_cgi(tmp, delim, res))
+			return (false);
+	}
 	return (true);
 }
 

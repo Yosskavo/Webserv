@@ -125,7 +125,7 @@ public:
     void queue_error(t_client& client, int code);
     void queue_redirect(t_client& client,const std::string& location, int code);
     void choose_server(t_client& client);
-    std::string reason_sentence(int code);
+    static std::string reason_sentence(int code);
     bool parse_request(t_request &req, const std::string &buffer);
 };
 
@@ -136,6 +136,6 @@ bool	ft_method(t_request & req, const std::string &buffer);
 bool	ft_headers(t_request & req, std::string & s);
 std::map<std::string, std::string> ft_cookies(const std::string s);
 std::string	ft_trim(std::string s, char c);
-
+bool	ft_cgi(std::string & out, const std::string &delim, t_response & res);
 
 #endif
