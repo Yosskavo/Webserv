@@ -28,7 +28,8 @@ SRC = main.cpp \
       utils/numbers_handle.cpp \
       utils/print.cpp \
       utils/split.cpp \
-      utils/trim.cpp
+      utils/trim.cpp  \
+	  utils/join.cpp
 
 OBJ = $(SRC:.cpp=.o)
 

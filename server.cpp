@@ -1,6 +1,5 @@
 #include "server.hpp"
 
-
 void print_error_exit(std::string src,std::vector<struct pollfd>& listener)
 {
     std::cerr << src << ": " << strerror(errno) << std::endl;
@@ -239,7 +238,7 @@ std::string to_string(size_t n)
 
 char **build_env(t_client& client)
 {
-    char ** env = new char*[11];
+    char ** env = new char*[12];
     std::string tmp = "REQUEST_METHOD=" + client.request.method;
     env[0] = strdup(tmp.c_str());
     tmp = "QUERY_STRING=" + client.request.query_string;
@@ -263,7 +262,11 @@ char **build_env(t_client& client)
     tmp = "SERVER_PORT=" + to_string(client.request.server->port);
     env[8] = strdup(tmp.c_str());
     env[9] = strdup("GATEWAY_INTERFACE=CGI/1.1");
-    env[10] = NULL;
+	if (client.request.cookies.size())
+		env[10] = strdup(("HTTP_COOKIE=" + ft_join_the_map(client.request.cookies)).c_str());
+	else
+		env[10] = NULL;
+    env[11] = NULL;
     return  env;
 }
 

@@ -71,5 +71,5 @@ t_location		ft_handle_location(std::vector<std::string>::iterator &it, t_config 
 void		ft_print_this(t_config & t);
 int			ft_to_number(std::string &it);
 bool		ft_check_is_number(std::string &it);
-
+std::string ft_join_the_map(std::map<std::string, std::string> & cookies);
 #endif
