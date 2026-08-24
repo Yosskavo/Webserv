@@ -810,6 +810,7 @@ void server::handle_cgi_write(int fd)
         return;
     }
 }
+
 void reset_client(t_client& client)
 {
     client.request = s_request();

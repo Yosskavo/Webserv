@@ -6,6 +6,8 @@ C_RED    = \033[0;31m
 C_RESET  = \033[0m
 C_PURPLE = \033[1;35m
 
+SHELL := /bin/zsh
+
 NAME = webserv
 CC = c++
 CFLAGS = -g3 -Wall -Wextra -Werror -std=c++98 -I .
