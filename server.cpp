@@ -221,7 +221,7 @@ std::string get_extention(std::string target)
 
 char **build_argv(t_client& client, std::string& cgi_handler)
 {
-    std::string target = client.location->root_path + client.request.target;
+    std::string target = client.location->root_path + "/" + client.request.target.substr(client.location->path.size());
     char **argv = new char*[3];
     argv[0] = strdup(cgi_handler.c_str());
     argv[1] = strdup(target.c_str());
@@ -251,7 +251,7 @@ char **build_env(t_client& client)
         tmp += client.request.headers["Content-Type"];
     env[3] = strdup(tmp.c_str());
 
-    tmp = "SCRIPT_FILENAME=" + (client.location->root_path + client.request.target);
+    tmp = "SCRIPT_FILENAME=" + (client.location->root_path + "/" + client.request.target.substr(client.location->path.size()));
     env[4] = strdup(tmp.c_str());
     tmp = "SCRIPT_NAME=" + client.request.target;
     env[5] = strdup(tmp.c_str());
@@ -282,7 +282,9 @@ void server::start_cgi(t_client& client, std::string cgi_handler)
 {
     int std_in[2];
     int std_out[2];
-    
+    std::cout << "CGI handler: " << cgi_handler << std::endl;
+    std::cout << "CGI script: " << client.location->root_path << "/"
+          << client.request.target.substr(client.location->path.size()) << std::endl;
     if(pipe(std_out) < 0)
     {
         queue_error(client, 500);
@@ -400,7 +402,7 @@ bool server::get_index(t_client& client)
 
     for(size_t i = 0; i < client.location->index.size(); i++)
     {
-        std::string file = client.location->root_path + client.request.target + "/" + client.location->index[i];
+        std::string file = client.location->root_path + "/" + client.location->index[i];
         if(stat(file.c_str(), &st) == 0)
         {
             serve_file(client, file, 200);
@@ -487,9 +489,8 @@ void server::handle_get(t_client& client)
 {
     struct stat file_stat;
     std::string file_path;
-
-    file_path =  client.location->root_path + client.request.target;
-
+    std::string relative = client.request.target.substr(client.location->path.size());
+    file_path =  client.location->root_path + "/" + relative;
     if(stat(file_path.c_str(), &file_stat) < 0)
     {
         queue_error(client, 404);
@@ -515,7 +516,7 @@ void server::handle_delete(t_client& client)
     struct stat st;
     std::string relative = client.request.target.substr(client.location->path.size());
     std::string root_location =  client.location->root_path.substr(1);
-    std::string file = client.server->root_path + root_location + "/" + relative;
+    std::string file = root_location + "/" + relative;
     if(stat(file.c_str(), &st) == -1)
     {
         queue_error(client, 404);
@@ -550,9 +551,22 @@ void server::handle_delete(t_client& client)
 void server::handle_post(t_client& client)
 {
     std::string relative = client.request.target.substr(client.location->path.size());
-    std::string root_location =  client.location->root_path.substr(1);
-    std::string file_path = client.server->root_path + root_location + "/" + relative;
+    //if location->root.empty
+    std::string file_path = client.location->root_path  + "/" + relative;
+    //else
+    //std::string file_path = client.location->root_path; //always check the /
+    struct stat st;
+    if (stat(file_path.c_str(), &st) == 0)
+    {
+        if (S_ISDIR(st.st_mode))
+        {
+            queue_error(client, 403);
+            return;
+        }
+    }
     std::ofstream file(file_path.c_str(), std::ios::out | std::ios::binary);
+    
+    
     if(!file.is_open())
     {
         queue_error(client, 500);
@@ -572,6 +586,17 @@ void server::handle_post(t_client& client)
 
 void server::route(t_client& client)
 {
+    struct stat st;
+    std::string file_path = client.server->root_path + client.request.target;
+
+    if (stat(file_path.c_str(), &st) == 0 && S_ISDIR(st.st_mode))
+    {
+        if (client.request.target[client.request.target.size() - 1] != '/')
+        {
+            queue_redirect(client, client.request.target + "/", 301);
+            return;
+        }
+    }  
     t_config* srv = client.request.server;
     t_location* loc = choose_location(srv, client.request.target);
     if(loc == NULL)
@@ -697,6 +722,7 @@ bool server::parse_request(t_request &req, const std::string &buffer)
 	std::string tmp;
 	size_t	pos;
 
+    std::cout << "this is the request :\n" << buffer << std::endl;
 	pos = buffer.find("\r\n");
 	if (pos == std::string::npos)
 		return (false);
@@ -825,7 +851,7 @@ void server::build_response(t_client& client)
 {
 
     std::ostringstream ss;
-	
+    std::cout << client.response.status_code << std::endl;
 	ss << "HTTP/1.1 " << client.response.status_code  << " " << client.response.status +"\r\n";
     client.response.headers["Content-Length"] = to_string(client.response.body.size());
     
