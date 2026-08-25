@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<title>Webserv</title>
+	</head>
+	<body>
+		<h1>Welcome to the Webserv</h1>
+		<h2>Description</h2>
+		<p>This project is aim to create a simple web server to handle request's of http1.0/1.1 using c++98</p>
+		<p>its handle methods POST, DELETE and GET</p>
+
+		<h2>Here is were you can upload to the server</h2>
+		<p>upload by clicking this buttom (limit is 10Kb) : 
+			<input type="file" id="fileInput" style="display: none;" onchange="ft_put()">            
+			<button type="button" class="my-btn" onclick="document.getElementById('fileInput').click()">POST</button>
+		</p>
+		<p id="status"></p>
+		<ul id="fileList"></ul>
+
+		<script src="loadfiles.js"></script>
+		<script src="put.js"></script>
+		<script src="delete.js"></script>
+
+		<h2>Cookie & Session Tracker</h2>
+		<p id="visitCounter">Tracking your visit to this website..</p>
+		
+		<p>Here to reset the cookies
+			<button type="button" onclick="resetVisits()">Reset Visits</button>
+		</p>
+
+		<script src="cookies.js"></script>
+
+
+		<h2>This is the part that run cgi</h2>
+		<form action="/cgi/http.py" method="PUT">
+			<label>Enter Message: </label>
+			<input type="text" name="message" placeholder="Hello from POST" required>
+			<button type="submit">Send POST to CGI</button>
+		</form>
+
+
+		<h2>This section will re-dircate you to the errors.htmls</h2>
+		<table>
+			<tr>
+				<td><strong>404 Not Found:</strong></td>
+				<td><a href="/nonexistent.html">Click Me</a></td>
+			</tr>
+			<tr>
+				<td><strong>500 Internal Error:</strong></td>
+				<td><a href="/test500">Click Me</a></td>
+			</tr>
+			<tr>
+				<td><strong>405 Method Not Allowed:</strong></td>
+				<td><button type="button" onclick="test405()">Click Me</button></td>
+			</tr>
+			<tr>
+				<td><strong>413 Payload Too Large:</strong></td>
+				<td><button type="button" onclick="test413()">Click Me</button></td>
+			</tr>
+		</table>
+		<script src="errors.js"></script>
+
+
+
+	</body>
+</html>
