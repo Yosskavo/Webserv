@@ -1,4 +1,4 @@
-#include "../../server.hpp"
+#include "../../server/server.hpp"
 
 static std::map<std::string, std::string> header_split(const std::string &tmp)
 {

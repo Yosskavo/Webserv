@@ -1,4 +1,4 @@
-#include "../server.hpp"
+#include "../server/server.hpp"
 
 std::string	ft_trim(std::string s, char c)
 {

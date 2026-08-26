@@ -1,4 +1,4 @@
-#include "../server.hpp"
+#include "../server/server.hpp"
 
 std::vector<std::string> ft_split(const std::string & str, const std::string &dilm)
 {

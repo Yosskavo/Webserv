@@ -1,5 +1,5 @@
 #include "webserv.h"
-#include "server.hpp"
+#include "server/server.hpp"
 
 int main(int ac, char **av)
 {
@@ -20,11 +20,6 @@ int main(int ac, char **av)
 		std::cout << e.what() << std::endl;
 		exit_status = 1;
 	}
-	//for (std::vector<t_config>::iterator it = config.begin(); it != config.end(); it++)
-	//{
-	//	std::cout << "-----------------------------------------" << std::endl;
-	//		ft_print_this(*it);
-	//}
 	server server;
 	server.init(config);
 	server.run();

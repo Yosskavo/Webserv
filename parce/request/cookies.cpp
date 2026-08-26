@@ -1,4 +1,4 @@
-#include "../../server.hpp"
+#include "../../server/server.hpp"
 
 std::map<std::string, std::string> ft_cookies(const std::string  s)
 {

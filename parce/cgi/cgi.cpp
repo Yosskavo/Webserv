@@ -1,4 +1,4 @@
-#include "../../server.hpp"
+#include "../../server/server.hpp"
 
 bool	ft_cgi(std::string & out, const std::string & delim, t_response & res)
 {

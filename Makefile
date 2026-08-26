@@ -9,11 +9,12 @@ C_PURPLE = \033[1;35m
 SHELL := /bin/zsh
 
 NAME = webserv
-CC = c++
-CFLAGS = -g3 -Wall -Wextra -Werror -std=c++98 -I .
+CXX = c++
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -I .
 
 SRC = main.cpp \
-      server.cpp \
+      server/Server_core.cpp server/Server_read.cpp server/Server_route.cpp \
+      server/Server_static.cpp server/Server_modify.cpp server/Server_cgi.cpp server/Server_response.cpp \
       struct/location.cpp \
       parce/file/error.cpp \
       parce/file/listen.cpp \
@@ -37,12 +38,12 @@ all: $(NAME)
 
 $(NAME): $(OBJ)
 	@echo "$(C_BLUE) 󰌷 Linking $(NAME)...$(C_RESET)"
-	@$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
+	@$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME)
 	@echo "$(C_GREEN) 󰙴 Done compiling!$(C_RESET)"
 
 %.o: %.cpp webserv.h server.hpp
 	@echo "$(C_YELLOW) 󰔚 Compiling $<...$(C_RESET)"
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	@echo "$(C_RED) 󰮘 Removing object files...$(C_RESET)"

@@ -1,7 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "webserv.h"
+#include "../webserv.h"
 #include <signal.h>
 #include <sys/socket.h>
 #include <fcntl.h>
@@ -131,10 +131,13 @@ public:
     void choose_server(t_client& client);
     static std::string reason_sentence(int code);
     bool parse_request(t_request &req, const std::string &buffer);
+    
+
 };
 
 
-
+std::string to_string(size_t n);
+t_location* choose_location(t_config* server, std::string target);
 std::vector<std::string> ft_split(const std::string & str, const std::string &dilm);
 bool	ft_method(t_request & req, const std::string &buffer);
 bool	ft_headers(t_request & req, std::string & s);
