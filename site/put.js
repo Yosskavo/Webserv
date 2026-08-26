@@ -9,7 +9,7 @@ async function ft_put() {
 	}
 	try 
 	{
-		const respond = await fetch(`/upload/${encodeURIComponent(fileInput.files[0].name)}`, {method: 'PUT', body: fileInput.files[0]});
+		const respond = await fetch(`/upload/${encodeURIComponent(fileInput.files[0].name)}`, {method: 'POST', body: fileInput.files[0]});
 		if (respond.ok) {
 			status.innerText = `The file uploaded :)`;
 			fileInput.value = "";

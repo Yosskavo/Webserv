@@ -452,6 +452,17 @@ void server::serve_file(t_client& client, const std::string& file_path, int code
     std::ifstream file(file_path.c_str(), std::ios::in | std::ios::binary);
     if(!file.is_open())
     {
+		if (code >= 400) 
+		{
+			client.response.status_code = code;
+			client.response.status = reason_sentence(code);
+			client.response.body = "<html><body><h1>" + to_string(code) + " " + reason_sentence(code) + "</h1></body></html>";
+			client.response.headers["Content-Type"] = "text/html";
+			build_response(client);
+			client.state = WRITING_RESPONSE;
+			set_events(client.fd, POLLOUT);
+			return;
+		}
         queue_error(client, 403); // manual error; 
         return;
     }
@@ -529,7 +540,7 @@ void server::handle_delete(t_client& client)
 {
     struct stat st;
     std::string relative = client.request.target.substr(client.location->path.size());
-    std::string root_location =  client.location->root_path.substr(1);
+    std::string root_location = client.location->root_path;
     std::string file = root_location + "/" + relative;
     if(stat(file.c_str(), &st) == -1)
     {

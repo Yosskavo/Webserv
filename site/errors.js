@@ -17,7 +17,7 @@ async function test413() {
 		const largeData = "X".repeat(50 * 1024);
 
 		const response = await fetch('/upload/large_test.txt', {
-			method: 'PUT',
+			method: 'POST',
 			body: largeData
 		});
 		status.innerText = `413 Test Response: ${response.status}`;
