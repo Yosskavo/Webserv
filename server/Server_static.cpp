@@ -19,6 +19,8 @@ std::string getContentType(const std::string& target)
 			return "image/png";
 		else if (type == ".py")
 			return "text/x-python";
+		else if (type == ".php")
+			return "application/x-httpd-php";
 	}
 	return "application/octet-stream";
 }
