@@ -140,6 +140,15 @@ void server::accept_new_clients(int listener_fd)
 
 void server::cleaning_client(std::map<int, t_client>::iterator it)
 {
+    char buf[4096];
+    while (recv(it->first, buf, sizeof(buf), MSG_DONTWAIT) > 0) {}
+    
+    if (it->second.request.body_fd != -1) {
+        close(it->second.request.body_fd);
+    }
+    if (!it->second.request.body_file.empty()) {
+        unlink(it->second.request.body_file.c_str());
+    }
     close(it->first);
     std::vector<struct pollfd>::iterator t = listeners.begin();
     while(t != listeners.end())
@@ -238,36 +247,42 @@ std::string to_string(size_t n)
 
 char **build_env(t_client& client)
 {
-    char ** env = new char*[12];
-    std::string tmp = "REQUEST_METHOD=" + client.request.method;
-    env[0] = strdup(tmp.c_str());
-    tmp = "QUERY_STRING=" + client.request.query_string;
-    env[1] = strdup(tmp.c_str());
-    tmp = "CONTENT_LENGTH=" + to_string(client.request.content_length);
-    env[2] = strdup(tmp.c_str());
-
-    tmp = "CONTENT_TYPE=";
+    std::vector<std::string> envs;
+    envs.push_back("REQUEST_METHOD=" + client.request.method);
+    envs.push_back("QUERY_STRING=" + client.request.query_string);
+    envs.push_back("CONTENT_LENGTH=" + to_string(client.request.content_length));
+    
     if(client.request.headers.count("Content-Type"))
-        tmp += client.request.headers["Content-Type"];
-    env[3] = strdup(tmp.c_str());
+        envs.push_back("CONTENT_TYPE=" + client.request.headers["Content-Type"]);
+        
+    envs.push_back("SCRIPT_FILENAME=" + (client.location->root_path + "/" + client.request.target.substr(client.location->path.size())));
+    envs.push_back("SCRIPT_NAME=" + client.request.target);
+    envs.push_back("PATH_INFO=" + client.request.target);
+    envs.push_back("REQUEST_URI=" + client.request.target);
+    envs.push_back("SERVER_PROTOCOL=" + client.request.version);
+    envs.push_back("SERVER_NAME=" + client.request.server_name);
+    envs.push_back("SERVER_PORT=" + to_string(client.request.server->port));
+    envs.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    
+    if (client.request.cookies.size())
+        envs.push_back("HTTP_COOKIE=" + ft_join_the_map(client.request.cookies));
 
-    tmp = "SCRIPT_FILENAME=" + (client.location->root_path + "/" + client.request.target.substr(client.location->path.size()));
-    env[4] = strdup(tmp.c_str());
-    tmp = "SCRIPT_NAME=" + client.request.target;
-    env[5] = strdup(tmp.c_str());
-    tmp = "SERVER_PROTOCOL=" + client.request.version;
-    env[6] = strdup(tmp.c_str());
-    tmp = "SERVER_NAME=" + client.request.server_name;
-    env[7] = strdup(tmp.c_str());
-    tmp = "SERVER_PORT=" + to_string(client.request.server->port);
-    env[8] = strdup(tmp.c_str());
-    env[9] = strdup("GATEWAY_INTERFACE=CGI/1.1");
-	if (client.request.cookies.size())
-		env[10] = strdup(("HTTP_COOKIE=" + ft_join_the_map(client.request.cookies)).c_str());
-	else
-		env[10] = NULL;
-    env[11] = NULL;
-    return  env;
+    // add all HTTP_ headers
+    for(std::map<std::string, std::string>::iterator it = client.request.headers.begin(); it != client.request.headers.end(); ++it)
+    {
+        std::string key = it->first;
+        for (size_t i = 0; i < key.size(); ++i) {
+            if (key[i] == '-') key[i] = '_';
+            else key[i] = toupper(key[i]);
+        }
+        envs.push_back("HTTP_" + key + "=" + it->second);
+    }
+    
+    char ** env = new char*[envs.size() + 1];
+    for (size_t i = 0; i < envs.size(); ++i)
+        env[i] = strdup(envs[i].c_str());
+    env[envs.size()] = NULL;
+    return env;
 }
 
 void free_arr(char **arr)
@@ -320,10 +335,26 @@ void server::start_cgi(t_client& client, std::string cgi_handler)
     {
         if(client.request.method == "POST")
         {    
-            if(dup2(std_in[0], 0) < 0)
+            // Open the temp file we saved earlier and plug it into stdin (fd 0)
+            int file_fd = open(client.request.body_file.c_str(), O_RDONLY);
+            if (file_fd >= 0) 
+            {
+                dup2(file_fd, 0);
+                close(file_fd);
+            }
+            else
                 exit(1);
-            close(std_in[0]);
-            close(std_in[1]);
+        }
+        else
+        {
+            int dev_null = open("/dev/null", O_RDONLY);
+            if(dev_null >= 0)
+            {
+                dup2(dev_null, 0);
+                close(dev_null);
+            }
+            else
+                close(0);
         }
         if(dup2(std_out[1], 1) < 0)
             exit(1);
@@ -343,24 +374,6 @@ void server::start_cgi(t_client& client, std::string cgi_handler)
     c.out_fd = std_out[0];
     c.client_fd = client.fd;
     c.stdout_closed = false;
-    if(client.request.method == "POST")
-    {
-        pollfd p;
-        close(std_in[0]);
-        p.events = POLLOUT;
-        p.fd = std_in[1];
-        p.revents = 0;
-        fcntl(p.fd, F_SETFL, O_NONBLOCK);
-        c.in_fd = std_in[1];
-        c.stdin_closed = false;
-        fd_to_pid[p.fd] = pid; 
-        listeners.push_back(p);
-    }
-    else
-    {
-        c.stdin_closed = true;
-        c.in_fd = -1;
-    }
     pollfd p;
     p.events = POLLIN;
     p.fd = std_out[0];
@@ -399,10 +412,11 @@ std::string getContentType(const std::string& target)
 bool server::get_index(t_client& client)
 {
     struct stat st;
-
+    std::string relative = client.request.target.substr(client.location->path.size());
+    std::string current_dir = client.location->root_path + "/" + relative;
     for(size_t i = 0; i < client.location->index.size(); i++)
     {
-        std::string file = client.location->root_path + "/" + client.location->index[i];
+        std::string file = current_dir + "/" + client.location->index[i];
         if(stat(file.c_str(), &st) == 0)
         {
             serve_file(client, file, 200);
@@ -438,7 +452,18 @@ void server::serve_file(t_client& client, const std::string& file_path, int code
     std::ifstream file(file_path.c_str(), std::ios::in | std::ios::binary);
     if(!file.is_open())
     {
-        queue_error(client, 403);
+		if (code >= 400) 
+		{
+			client.response.status_code = code;
+			client.response.status = reason_sentence(code);
+			client.response.body = "<html><body><h1>" + to_string(code) + " " + reason_sentence(code) + "</h1></body></html>";
+			client.response.headers["Content-Type"] = "text/html";
+			build_response(client);
+			client.state = WRITING_RESPONSE;
+			set_events(client.fd, POLLOUT);
+			return;
+		}
+        queue_error(client, 403); // manual error; 
         return;
     }
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -505,7 +530,7 @@ void server::handle_get(t_client& client)
             generate_index(client, file_path);
             return;
         }
-        queue_error(client, 403);
+        queue_error(client, 404);
         return;
     }
     serve_file(client, file_path, 200);
@@ -515,7 +540,7 @@ void server::handle_delete(t_client& client)
 {
     struct stat st;
     std::string relative = client.request.target.substr(client.location->path.size());
-    std::string root_location =  client.location->root_path.substr(1);
+    std::string root_location = client.location->root_path;
     std::string file = root_location + "/" + relative;
     if(stat(file.c_str(), &st) == -1)
     {
@@ -560,7 +585,13 @@ void server::handle_post(t_client& client)
     {
         if (S_ISDIR(st.st_mode))
         {
-            queue_error(client, 403);
+            client.response.status_code = 200;
+            client.response.status = "OK";
+            client.response.body = "OK";
+            client.response.headers["Content-Type"] = "text/plain";
+            build_response(client);
+            client.state = WRITING_RESPONSE;
+            set_events(client.fd, POLLOUT);
             return;
         }
     }
@@ -675,14 +706,68 @@ void server::handle_client_read(int fd)
     }
     if(client.state == READING_BODY)
     {
-        size_t n = client.inbuf.size();
-        if(n > client.server->client_max_body_size)
-            queue_error(client, 413);
-        if(n >= client.request.content_length)
+        if(client.request.body_fd == -1)
         {
-            client.request.body = client.inbuf.substr(0, client.request.content_length);
-            client.inbuf.erase(0, client.request.content_length);
-            client.state = ROUTING;
+            std::stringstream ss;
+            ss << "/tmp/webserv_body_" << client.fd << "_" << rand();
+            client.request.body_file = ss.str();
+            client.request.body_fd = open(client.request.body_file.c_str(), O_CREAT| O_WRONLY | O_TRUNC, 0644);
+        }
+        if(client.request.is_chunked)
+        {
+            
+            while(1)
+            {
+                size_t p = client.inbuf.find("\r\n");
+                if(p == std::string::npos)
+                    break;
+                std::string hex = client.inbuf.substr(0, p);
+                size_t chunk_size = strtol(hex.c_str(), NULL, 16);
+                
+                if(chunk_size == 0)
+                {
+                    client.inbuf.erase(0, p + 4);
+                    client.state = ROUTING;
+                    break;
+                }
+                
+                if(client.inbuf.size() >= p + 2 + chunk_size + 2)
+                {
+                    std::string chunk = client.inbuf.substr(p+2, chunk_size);
+                    write(client.request.body_fd, chunk.c_str(), chunk.size());
+                    client.request.content_length += chunk_size;
+
+                    t_location* loc = choose_location(client.request.server, client.request.target);
+                    size_t max_body = loc ? loc->client_max_body_size : client.request.server->client_max_body_size;
+                    
+                    if(client.request.content_length > max_body)
+                    {
+                        queue_error(client, 413);
+                        return;
+                    }
+                    client.inbuf.erase(0, p + 2 + chunk_size + 2);
+                }
+                else
+                    break;
+            }
+        }
+        else
+        {
+            t_location* loc = choose_location(client.request.server, client.request.target);
+            size_t max_body = loc ? loc->client_max_body_size : client.request.server->client_max_body_size;
+            
+            size_t n = client.inbuf.size();
+            if(n > max_body)
+            {
+                queue_error(client, 413);
+                return;
+            }
+            if(n >= client.request.content_length)
+            {
+                client.request.body = client.inbuf.substr(0, client.request.content_length);
+                client.inbuf.erase(0, client.request.content_length);
+                client.state = ROUTING;
+            }
         }
     }
     if(client.state == ROUTING)
@@ -732,7 +817,9 @@ bool server::parse_request(t_request &req, const std::string &buffer)
 	tmp = buffer.substr(pos + 2);
 	if (!ft_headers(req, tmp))
 		return (false);
-	req.body = tmp;
+	if(req.headers.count("Transfer-Encoding") && req.headers["Transfer-Encoding"] == "chunked")
+        req.is_chunked = true;
+    req.body = tmp;
 	req.body_received = tmp.length();
 	return (true);
 }
@@ -842,6 +929,13 @@ void server::handle_cgi_write(int fd)
 
 void reset_client(t_client& client)
 {
+    if (client.request.body_fd != -1) {
+        close(client.request.body_fd);
+    }
+    if (!client.request.body_file.empty()) {
+        unlink(client.request.body_file.c_str());
+    }
+    
     client.request = s_request();
     client.response = s_respond();
     client.state = READING_HEADERS;
@@ -875,7 +969,7 @@ void server::build_response(t_client& client)
 void server::handle_client_write(int fd)
 {
     t_client& client = clients[fd];
-    ssize_t n = write(fd, client.response.outbuf.c_str(), client.response.outbuf.size());
+    ssize_t n = write(fd, client.response.outbuf.c_str() + client.response.bytes_sent, client.response.outbuf.size() - client.response.bytes_sent);
     if(n < 0)
     {
         if(errno == EAGAIN || errno == EWOULDBLOCK)
@@ -885,9 +979,9 @@ void server::handle_client_write(int fd)
     }
     if(n > 0)
     {
-        client.response.outbuf.erase(0, n);
- 
-        if(client.response.outbuf.empty())
+        client.response.bytes_sent += n;
+
+        if(client.response.bytes_sent >= client.response.outbuf.size())
         {
             if(client.keep_alive)
             {
