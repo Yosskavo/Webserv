@@ -27,7 +27,7 @@ SRC = main.cpp \
       parce/request/method.cpp \
       parce/cgi/cgi.cpp \
       utils/numbers_handle.cpp \
-      utils/print.cpp \
+      \
       utils/split.cpp \
       utils/trim.cpp  \
 	  utils/join.cpp
