@@ -1,0 +1,59 @@
+/* --- TokyoNight Theme for Error Pages --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #1a1b26; /* TokyoNight Deep Blue */
+    color: #c0caf5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    text-align: center;
+}
+
+.error-card {
+    background-color: #24283b; /* TokyoNight Storm Card */
+    border-radius: 12px;
+    padding: 40px 30px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+h1 {
+    font-size: 2.2rem;
+    color: #f7768e; /* TokyoNight Red */
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+p {
+    font-size: 1.1rem;
+    color: #a9b1d6;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.btn-home {
+    display: inline-block;
+    padding: 10px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 6px;
+    background-color: #7aa2f7; /* TokyoNight Blue */
+    color: #1a1b26;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-home:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(122, 162, 247, 0.3);
+}

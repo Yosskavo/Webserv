@@ -23,11 +23,11 @@ function trackVisits() {
 	if (!visits) {
 		// 1st time visiting: initialize to 1
 		visits = 1;
-		display.innerText = "Welcome! This is your 1st visit.";
+		display.innerHTML = 'Welcome! This is your <span class="visit-count">1st</span> visit.';
 	} else {
 		// Returning visitor: parseInt converts string "4" to integer 4, then + 1            
 		visits = parseInt(visits) + 1;
-		display.innerText = `Welcome back! You have visited this server ${visits} times.`;
+		display.innerHTML = `Welcome back! You have visited this server <span class="visit-count">${visits}</span> times.`;
 	}
 
 	// Save the new number back to the cookie

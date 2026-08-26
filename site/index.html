@@ -3,116 +3,159 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Webserv</title>
+		<title>Webserv Dashboard</title>
+		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<h1>Webserv</h1>
+		<div class="snap-container">
+			<!-- 0. Hero Title Section -->
+			<section id="hero" class="snap-section">
+				<div class="section-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+					<h1 class="main-title" style="margin-bottom: 0; font-size: 4.5rem; color: #bb9af7; letter-spacing: 2px;">Webserv</h1>
+					<div class="scroll-indicator">Scroll Down</div>
+				</div>
+			</section>
 
-		<!-- 1. Description Section -->
-		<section id="description">
-			<h2>Description</h2>
-			<p>This project is aimed to create a simple HTTP/1.0 and HTTP/1.1 web server in C++98.</p>
-			<p>It supports GET, POST, and DELETE methods, directory indexing, custom error handling, cookie/session management, and multi-language CGI execution.</p>
-		</section>
+			<!-- 1. Description Section -->
+			<section id="description" class="snap-section">
+				<div class="section-box">
+					<h2>Description</h2>
+					<p>This project is aimed to create a simple HTTP/1.0 and HTTP/1.1 web server in C++98.</p>
+					<p>It supports GET, POST, and DELETE methods, directory indexing, custom error handling, cookie/session management, and multi-language CGI execution.</p>
+				</div>
+			</section>
 
-		<hr>
-
-		<!-- 2. Post / Upload Section -->
-		<section id="post">
-			<h2>Post & File Management</h2>
-			<p>Upload a file to the server (max body size limit applies): 
-				<input type="file" id="fileInput" style="display: none;" onchange="ft_put()">            
-				<button type="button" class="my-btn" onclick="document.getElementById('fileInput').click()">Upload File (POST)</button>
-			</p>
-			<p id="status"></p>
-			<ul id="fileList"></ul>
-		</section>
-
-		<hr>
-
-		<!-- 3. Error Triggers Section -->
-		<section id="errors">
-			<h2>Error Triggers</h2>
-			<p>Test custom HTTP error responses and status code pages:</p>
-			<table>
-				<tr>
-					<td><strong>404 Not Found:</strong></td>
-					<td><a href="/nonexistent.html">Click Me</a></td>
-				</tr>
-				<tr>
-					<td><strong>500 Internal Error:</strong></td>
-					<td><a href="/test500">Click Me</a></td>
-				</tr>
-				<tr>
-					<td><strong>405 Method Not Allowed:</strong></td>
-					<td><button type="button" onclick="test405()">Click Me</button></td>
-				</tr>
-				<tr>
-					<td><strong>413 Payload Too Large:</strong></td>
-					<td><button type="button" onclick="test413()">Click Me</button></td>
-				</tr>
-			</table>
-		</section>
-
-		<hr>
-
-		<!-- 4. CGI Section -->
-		<section id="cgi">
-			<h2>CGI Dual Benchmark Arena (Python vs PHP)</h2>
-			<p>Enter any string and run both Python and PHP CGI scripts simultaneously to compare their transformations and execution times:</p>
-			<div>
-				<label><strong>Input Text:</strong> </label>
-				<input type="text" id="cgiInput" placeholder="Type text to transform..." value="Hello 42 Webserv!" style="width: 260px;">
-				<button type="button" onclick="runDualCgi()">Run Dual CGI Benchmark</button>
+			<!-- 2. Post / Upload Section -->
+			<section id="post" class="snap-section">
+				<div class="section-box">
+				<h2>Post & File Management</h2>
+				<p>Upload files directly to the server via HTTP POST. You can view uploaded files or delete them using HTTP DELETE.</p>
+				<p><strong>Max Body Size Limit:</strong> <code>10 KB</code> (Uploads exceeding 10 KB will be rejected with a <code class="error-code">413 Payload Too Large</code> error).</p>
+				<div class="upload-control">
+					<input type="file" id="fileInput" class="hidden-input" onchange="ft_put()">            
+					<button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">Upload File (POST)</button>
+				</div>
+				<p id="status" class="status-msg"></p>
+				<ul id="fileList" class="file-list"></ul>
 			</div>
-			<!-- Container where live comparison cards appear -->
-			<div id="cgiResults" style="margin-top: 15px;"></div>
-		</section>
+			</section>
 
-		<hr>
+			<!-- 3. Error Triggers Section -->
+			<section id="errors" class="snap-section">
+				<div class="section-box">
+				<h2>Error Triggers</h2>
+				<p>Test custom HTTP error responses and status code pages:</p>
+				<table class="error-table">
+					<tr>
+						<td><strong>404 Not Found:</strong></td>
+						<td><button type="button" class="btn btn-secondary" onclick="window.location.href='/nonexistent.html'">Click Me</button></td>
+					</tr>
+					<tr>
+						<td><strong>500 Internal Error:</strong></td>
+						<td><button type="button" class="btn btn-secondary" onclick="window.location.href='/errors/500.html'">Click Me</button></td>
+					</tr>
+					<tr>
+						<td><strong>405 Method Not Allowed:</strong></td>
+						<td><button type="button" class="btn btn-secondary" onclick="test405()">Click Me</button></td>
+					</tr>
+					<tr>
+						<td><strong>413 Payload Too Large:</strong></td>
+						<td><button type="button" class="btn btn-secondary" onclick="test413()">Click Me</button></td>
+					</tr>
+				</table>
+			</div>
+			</section>
 
-		<!-- 5. Cookies Section -->
-		<section id="cookies">
-			<h2>Cookie & Session Tracker</h2>
-			<p id="visitCounter">Tracking your visit to this website...</p>
-			<p>Here to reset the cookies: 
-				<button type="button" onclick="resetVisits()">Reset Visits</button>
-			</p>
-		</section>
-
-		<hr>
-
-		<!-- 6. Credits Section -->
-		<section id="credits">
-			<h2>Credits</h2>
-			<p>Developed as part of the 42 Network Common Core Webserv Project by:</p>
-			
-			<div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px;">
-				<!-- Person 1: yosskavo (yel-mota) -->
-				<div style="border: 1px solid #ccc; border-radius: 8px; padding: 15px; text-align: center; width: 180px;">
-					<img src="https://github.com/yosskavo.png" alt="yosskavo (yel-mota)" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background: #eee;">
-					<h3 style="margin: 10px 0 5px 0; font-size: 16px;">yosskavo</h3>
-					<p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">(yel-mota)</p>
-					<a href="https://github.com/yosskavo" target="_blank">GitHub Profile</a>
+			<!-- 4. CGI Section -->
+			<section id="cgi" class="snap-section">
+				<div class="section-box">
+				<h2>CGI Dual Benchmark Arena (Python vs PHP)</h2>
+				<p>Enter any string and run both Python and PHP CGI scripts simultaneously to compare their transformations and execution times:</p>
+				<div class="cgi-form">
+					<div class="input-group">
+						<label for="cgiInput"><strong>Input Text:</strong></label>
+						<input type="text" id="cgiInput" placeholder="Type text to transform..." value="Hello 42 Webserv!">
+					</div>
+					<div>
+						<button type="button" class="btn btn-accent" onclick="runDualCgi()">Run Dual CGI Benchmark</button>
+					</div>
 				</div>
+				<!-- Container where live comparison cards appear -->
+				<div id="cgiResults" class="cgi-results"></div>
+			</div>
+			</section>
 
-				<!-- Person 2: sfx (obajali) -->
-				<div style="border: 1px solid #ccc; border-radius: 8px; padding: 15px; text-align: center; width: 180px;">
-					<img src="https://github.com/Sfx00.png" alt="sfx (obajali)" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background: #eee;">
-					<h3 style="margin: 10px 0 5px 0; font-size: 16px;">sfx</h3>
-					<p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">(obajali)</p>
-					<a href="https://github.com/Sfx00" target="_blank">GitHub Profile</a>
-				</div>
-
-				<!-- Person 3: bird in a gale (cfarai) -->
-				<div style="border: 1px solid #ccc; border-radius: 8px; padding: 15px; text-align: center; width: 180px;">
-					<img src="https://github.com/cfarai.png" alt="bird in a gale (cfarai)" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background: #eee;">
-					<h3 style="margin: 10px 0 5px 0; font-size: 16px;">bird in a gale</h3>
-					<p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">(cfarai)</p>
-					<a href="https://github.com/cfarai" target="_blank">GitHub Profile</a>
+			<!-- 5. Cookies Section -->
+			<section id="cookies" class="snap-section">
+				<div class="section-box">
+				<h2>Cookie & Session Tracker</h2>
+				<p>This section demonstrates HTTP cookie handling and session persistence across multiple requests.</p>
+				<p>The counter below reads the <code>visits</code> cookie from your browser and increments each time you visit or refresh this page:</p>
+				<p id="visitCounter" class="visit-text">Tracking your visit to this website...</p>
+				<p>Click below to reset your visit session cookies:</p>
+				<div class="cookie-btn-group">
+					<button type="button" class="btn btn-warning" onclick="resetVisits()">Reset Visits</button>
 				</div>
 			</div>
-		</section>
+			</section>
+
+			<!-- 6. Credits Section -->
+			<section id="credits" class="snap-section">
+				<div class="section-box">
+				<h2>Credits</h2>
+				<p>Developed as part of the 42 Network Common Core Webserv Project by:</p>
+				
+				<div class="team-container">
+					<!-- Person 1: yosskavo (yel-mota) -->
+					<div class="member-card">
+						<img src="https://github.com/yosskavo.png" alt="yosskavo (yel-mota)" class="avatar">
+						<h3>yosskavo</h3>
+						<p class="login-tag">(yel-mota)</p>
+						<a href="https://github.com/yosskavo" target="_blank" class="github-link">GitHub Profile</a>
+					</div>
+
+					<!-- Person 2: sfx (obajali) -->
+					<div class="member-card">
+						<img src="https://github.com/Sfx00.png" alt="sfx (obajali)" class="avatar">
+						<h3>sfx</h3>
+						<p class="login-tag">(obajali)</p>
+						<a href="https://github.com/Sfx00" target="_blank" class="github-link">GitHub Profile</a>
+					</div>
+
+					<!-- Person 3: bird in a gale (cfarai) -->
+					<div class="member-card">
+						<img src="https://github.com/cfarai.png" alt="bird in a gale (cfarai)" class="avatar">
+						<h3>bird in a gale</h3>
+						<p class="login-tag">(cfarai)</p>
+						<a href="https://github.com/cfarai" target="_blank" class="github-link">GitHub Profile</a>
+					</div>
+				</div>
+			</div>
+			</section>
+		</div>
+
+		<!-- Error Modal Popup -->
+		<div id="errorModal" class="modal-overlay hidden" onclick="if(event.target === this) closeErrorModal()">
+			<div class="modal-content">
+				<h3 id="modalTitle" class="modal-title">Error Title</h3>
+				<p id="modalMessage" class="modal-msg">Error message details.</p>
+				<div class="modal-btn-group">
+					<button type="button" class="btn btn-secondary" onclick="closeErrorModal()">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Delete Confirmation Modal -->
+		<div id="deleteModal" class="modal-overlay hidden" onclick="if(event.target === this) closeDeleteModal()">
+			<div class="modal-content">
+				<h3 class="modal-title">Delete File</h3>
+				<p id="deleteModalText" class="modal-msg">Are you sure you want to delete this file?</p>
+				<div class="modal-btn-group" style="gap: 15px;">
+					<button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+					<button type="button" id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+				</div>
+			</div>
+		</div>
 
 		<!-- JavaScript Modules Loaded at the End -->
 		<script src="loadfiles.js"></script>
@@ -121,5 +164,6 @@
 		<script src="errors.js"></script>
 		<script src="cgi.js"></script>
 		<script src="cookies.js"></script>
+		<script src="animations.js"></script>
 	</body>
 </html>
