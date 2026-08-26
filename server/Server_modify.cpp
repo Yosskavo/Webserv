@@ -4,7 +4,7 @@ void server::handle_delete(t_client& client)
 {
     struct stat st;
     std::string relative = client.request.target.substr(client.location->path.size());
-    std::string root_location =  client.location->root_path.substr(1);
+    std::string root_location =  client.location->root_path;
     std::string file = root_location + "/" + relative;
     if(stat(file.c_str(), &st) == -1)
     {
