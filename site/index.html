@@ -1,68 +1,125 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Webserv</title>
 	</head>
 	<body>
-		<h1>Welcome to the Webserv</h1>
-		<h2>Description</h2>
-		<p>This project is aim to create a simple web server to handle request's of http1.0/1.1 using c++98</p>
-		<p>its handle methods POST, DELETE and GET</p>
+		<h1>Webserv</h1>
 
-		<h2>Here is were you can upload to the server</h2>
-		<p>upload by clicking this buttom (limit is 10Kb) : 
-			<input type="file" id="fileInput" style="display: none;" onchange="ft_put()">            
-			<button type="button" class="my-btn" onclick="document.getElementById('fileInput').click()">POST</button>
-		</p>
-		<p id="status"></p>
-		<ul id="fileList"></ul>
+		<!-- 1. Description Section -->
+		<section id="description">
+			<h2>Description</h2>
+			<p>This project is aimed to create a simple HTTP/1.0 and HTTP/1.1 web server in C++98.</p>
+			<p>It supports GET, POST, and DELETE methods, directory indexing, custom error handling, cookie/session management, and multi-language CGI execution.</p>
+		</section>
 
+		<hr>
+
+		<!-- 2. Post / Upload Section -->
+		<section id="post">
+			<h2>Post & File Management</h2>
+			<p>Upload a file to the server (max body size limit applies): 
+				<input type="file" id="fileInput" style="display: none;" onchange="ft_put()">            
+				<button type="button" class="my-btn" onclick="document.getElementById('fileInput').click()">Upload File (POST)</button>
+			</p>
+			<p id="status"></p>
+			<ul id="fileList"></ul>
+		</section>
+
+		<hr>
+
+		<!-- 3. Error Triggers Section -->
+		<section id="errors">
+			<h2>Error Triggers</h2>
+			<p>Test custom HTTP error responses and status code pages:</p>
+			<table>
+				<tr>
+					<td><strong>404 Not Found:</strong></td>
+					<td><a href="/nonexistent.html">Click Me</a></td>
+				</tr>
+				<tr>
+					<td><strong>500 Internal Error:</strong></td>
+					<td><a href="/test500">Click Me</a></td>
+				</tr>
+				<tr>
+					<td><strong>405 Method Not Allowed:</strong></td>
+					<td><button type="button" onclick="test405()">Click Me</button></td>
+				</tr>
+				<tr>
+					<td><strong>413 Payload Too Large:</strong></td>
+					<td><button type="button" onclick="test413()">Click Me</button></td>
+				</tr>
+			</table>
+		</section>
+
+		<hr>
+
+		<!-- 4. CGI Section -->
+		<section id="cgi">
+			<h2>CGI Dual Benchmark Arena (Python vs PHP)</h2>
+			<p>Enter any string and run both Python and PHP CGI scripts simultaneously to compare their transformations and execution times:</p>
+			<div>
+				<label><strong>Input Text:</strong> </label>
+				<input type="text" id="cgiInput" placeholder="Type text to transform..." value="Hello 42 Webserv!" style="width: 260px;">
+				<button type="button" onclick="runDualCgi()">Run Dual CGI Benchmark</button>
+			</div>
+			<!-- Container where live comparison cards appear -->
+			<div id="cgiResults" style="margin-top: 15px;"></div>
+		</section>
+
+		<hr>
+
+		<!-- 5. Cookies Section -->
+		<section id="cookies">
+			<h2>Cookie & Session Tracker</h2>
+			<p id="visitCounter">Tracking your visit to this website...</p>
+			<p>Here to reset the cookies: 
+				<button type="button" onclick="resetVisits()">Reset Visits</button>
+			</p>
+		</section>
+
+		<hr>
+
+		<!-- 6. Credits Section -->
+		<section id="credits">
+			<h2>Credits</h2>
+			<p>Developed as part of the 42 Network Common Core Webserv Project by:</p>
+			
+			<div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px;">
+				<!-- Person 1: yosskavo (yel-mota) -->
+				<div style="border: 1px solid #ccc; border-radius: 8px; padding: 15px; text-align: center; width: 180px;">
+					<img src="https://github.com/yosskavo.png" alt="yosskavo (yel-mota)" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background: #eee;">
+					<h3 style="margin: 10px 0 5px 0; font-size: 16px;">yosskavo</h3>
+					<p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">(yel-mota)</p>
+					<a href="https://github.com/yosskavo" target="_blank">GitHub Profile</a>
+				</div>
+
+				<!-- Person 2: sfx (obajali) -->
+				<div style="border: 1px solid #ccc; border-radius: 8px; padding: 15px; text-align: center; width: 180px;">
+					<img src="https://github.com/Sfx00.png" alt="sfx (obajali)" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background: #eee;">
+					<h3 style="margin: 10px 0 5px 0; font-size: 16px;">sfx</h3>
+					<p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">(obajali)</p>
+					<a href="https://github.com/Sfx00" target="_blank">GitHub Profile</a>
+				</div>
+
+				<!-- Person 3: bird in a gale (cfarai) -->
+				<div style="border: 1px solid #ccc; border-radius: 8px; padding: 15px; text-align: center; width: 180px;">
+					<img src="https://github.com/cfarai.png" alt="bird in a gale (cfarai)" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background: #eee;">
+					<h3 style="margin: 10px 0 5px 0; font-size: 16px;">bird in a gale</h3>
+					<p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">(cfarai)</p>
+					<a href="https://github.com/cfarai" target="_blank">GitHub Profile</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- JavaScript Modules Loaded at the End -->
 		<script src="loadfiles.js"></script>
 		<script src="put.js"></script>
 		<script src="delete.js"></script>
-
-		<h2>Cookie & Session Tracker</h2>
-		<p id="visitCounter">Tracking your visit to this website..</p>
-		
-		<p>Here to reset the cookies
-			<button type="button" onclick="resetVisits()">Reset Visits</button>
-		</p>
-
-		<script src="cookies.js"></script>
-
-
-		<h2>This is the part that run cgi</h2>
-		<form action="/cgi/http.py" method="POST">
-			<label>Enter Message: </label>
-			<input type="text" name="message" placeholder="Hello from POST" required>
-			<button type="submit">Send POST to CGI</button>
-		</form>
-
-
-		<h2>This section will re-dircate you to the errors.htmls</h2>
-		<table>
-			<tr>
-				<td><strong>404 Not Found:</strong></td>
-				<td><a href="/nonexistent.html">Click Me</a></td>
-			</tr>
-			<tr>
-				<td><strong>500 Internal Error:</strong></td>
-				<td><a href="/test500">Click Me</a></td>
-			</tr>
-			<tr>
-				<td><strong>405 Method Not Allowed:</strong></td>
-				<td><button type="button" onclick="test405()">Click Me</button></td>
-			</tr>
-			<tr>
-				<td><strong>413 Payload Too Large:</strong></td>
-				<td><button type="button" onclick="test413()">Click Me</button></td>
-			</tr>
-		</table>
 		<script src="errors.js"></script>
-
-
-
+		<script src="cgi.js"></script>
+		<script src="cookies.js"></script>
 	</body>
 </html>

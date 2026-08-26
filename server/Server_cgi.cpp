@@ -125,6 +125,7 @@ char **build_env(t_client& client)
     envs.push_back("SERVER_NAME=" + client.request.server_name);
     envs.push_back("SERVER_PORT=" + to_string(client.request.server->port));
     envs.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    envs.push_back("REDIRECT_STATUS=200");
     
     if (client.request.cookies.size())
         envs.push_back("HTTP_COOKIE=" + ft_join_the_map(client.request.cookies));
