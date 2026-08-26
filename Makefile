@@ -41,7 +41,7 @@ $(NAME): $(OBJ)
 	@$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME)
 	@echo "$(C_GREEN) 󰙴 Done compiling!$(C_RESET)"
 
-%.o: %.cpp webserv.h server.hpp
+%.o: %.cpp webserv.h server/server.hpp
 	@echo "$(C_YELLOW) 󰔚 Compiling $<...$(C_RESET)"
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 

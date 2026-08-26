@@ -55,6 +55,7 @@ void server::route(t_client& client)
 {
     struct stat st;
     std::string file_path = client.server->root_path + client.request.target;
+	std::cout << "file Path : " + file_path << std::endl;
 
     if (stat(file_path.c_str(), &st) == 0 && S_ISDIR(st.st_mode))
     {

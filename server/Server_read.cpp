@@ -38,6 +38,7 @@ bool server::parse_request(t_request &req, const std::string &buffer)
 	std::string tmp;
 	size_t	pos;
 
+	std::cout << "This is the request : " + buffer << std::endl;
 	pos = buffer.find("\r\n");
 	if (pos == std::string::npos)
 		return (false);

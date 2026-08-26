@@ -102,14 +102,22 @@ void server::handle_cgi_read(int fd)
 char **build_env(t_client& client)
 {
     std::vector<std::string> envs;
+	std::string target = client.location->root_path;
+
     envs.push_back("REQUEST_METHOD=" + client.request.method);
     envs.push_back("QUERY_STRING=" + client.request.query_string);
     envs.push_back("CONTENT_LENGTH=" + to_string(client.request.content_length));
     
     if(client.request.headers.count("Content-Type"))
-        envs.push_back("CONTENT_TYPE=" + client.request.headers["Content-Type"]);
-        
-    envs.push_back("SCRIPT_FILENAME=" + (client.location->root_path + "/" + client.request.target.substr(client.location->path.size())));
+	{
+		envs.push_back("CONTENT_TYPE=" + client.request.headers["Content-Type"]);
+	}
+
+	if (target[target.size() - 1] != '/')
+		target += "/";
+    target += client.request.target.substr(client.location->path.size());
+	std::cout << "target cgi env " + target << std::endl;
+    envs.push_back("SCRIPT_FILENAME=" + target);
     envs.push_back("SCRIPT_NAME=" + client.request.target);
     envs.push_back("PATH_INFO=" + client.request.target);
     envs.push_back("REQUEST_URI=" + client.request.target);
@@ -141,16 +149,18 @@ char **build_env(t_client& client)
 
 char **build_argv(t_client& client, std::string& cgi_handler)
 {
-    std::string target = client.location->root_path + "/" + client.request.target.substr(client.location->path.size());
+	std::string target = client.location->root_path;
+
+	if (target[target.size() - 1] != '/')
+		target += "/";
+    target += client.request.target.substr(client.location->path.size());
+
     char **argv = new char*[3];
     argv[0] = strdup(cgi_handler.c_str());
     argv[1] = strdup(target.c_str());
     argv[2] = NULL;
     return argv;
 }
-
-
-
 
 void server::start_cgi(t_client& client, std::string cgi_handler)
 {
