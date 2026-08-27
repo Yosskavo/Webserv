@@ -68,12 +68,11 @@ typedef struct s_client
     std::string outbuf;
     t_request request;
     t_response response;
-    bool keep_alive;
     int server_fd;
     t_config* server;
     t_location *location;
 
-    s_client() : fd(-1), state(READING_HEADERS), keep_alive(false), server_fd(-1), server(NULL), location(NULL) {}
+    s_client() : fd(-1), state(READING_HEADERS), server_fd(-1), server(NULL), location(NULL) {}
 
 }t_client;
 

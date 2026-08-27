@@ -149,10 +149,8 @@ void server::build_response(t_client& client)
     if (!client.response.headers.count("Content-Type"))
         client.response.headers["Content-Type"] = "text/plain";
 
-    if(client.keep_alive)
-        client.response.headers["Connection"] = "keep-alive";
-    else
-        client.response.headers["Connection"] = "close";
+
+    client.response.headers["Connection"] = "close";
 
     for(std::map<std::string, std::string>::iterator it = client.response.headers.begin(); it != client.response.headers.end(); ++it)
 	{
@@ -180,13 +178,7 @@ void server::handle_client_write(int fd)
 
         if(client.response.bytes_sent >= client.response.outbuf.size())
         {
-            if(client.keep_alive)
-            {
-                reset_client(client);
-                set_events(fd, POLLIN);
-            }
-            else
-                client.state = DEAD;
+            client.state = DEAD;
         }
         return;
     }
