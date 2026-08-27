@@ -36,33 +36,6 @@ bool parse_cgi(const std::string &out, t_response &res)
 	return (true);
 }
 
-void server::handle_cgi_write(int fd)
-{
-    t_CgiProcess& cgi = cgis[fd_to_pid[fd]];
-    t_client& client = clients[cgi.client_fd];
-    ssize_t n = write(cgi.in_fd, client.request.body.c_str(), client.request.body.size());
-    if(n < 0)
-    {
-        if(errno == EAGAIN || errno == EWOULDBLOCK)
-            return;
-        cleaning_cgi(fd);
-        fd_to_pid.erase(fd);
-        cgi.stdin_closed = true;
-        queue_error(client, 500);
-        return;
-    }
-    client.request.body.erase(0, n);
-    
-    if(client.request.body.size() == 0)
-    {
-        cleaning_cgi(fd);
-        fd_to_pid.erase(fd);
-        cgi.stdin_closed = true;
-        return;
-    }
-}
-
-
 void server::handle_cgi_read(int fd)
 {
     t_CgiProcess& cgi = cgis[fd_to_pid[fd]];
@@ -165,7 +138,6 @@ char **build_argv(t_client& client, std::string& cgi_handler)
 
 void server::start_cgi(t_client& client, std::string cgi_handler)
 {
-    int std_in[2];
     int std_out[2];
  
     if(pipe(std_out) < 0)
@@ -174,28 +146,12 @@ void server::start_cgi(t_client& client, std::string cgi_handler)
         return;
     }
 
-    if(client.request.method == "POST")
-    {
-        if(pipe(std_in) < 0)
-        {
-            close(std_out[0]);
-            close(std_out[1]);
-            queue_error(client, 500);
-            return;
-        }
-    }
-
 
     pid_t pid = fork();
     if(pid < 0)
     {
         close(std_out[0]);
         close(std_out[1]);
-        if(client.request.method == "POST")
-        {
-            close(std_in[0]);
-            close(std_in[1]);
-        }
         queue_error(client, 500);
         return;
     }
@@ -242,6 +198,7 @@ void server::start_cgi(t_client& client, std::string cgi_handler)
     c.out_fd = std_out[0];
     c.client_fd = client.fd;
     c.stdout_closed = false;
+    c.stdin_closed = true;
     pollfd p;
     p.events = POLLIN;
     p.fd = std_out[0];

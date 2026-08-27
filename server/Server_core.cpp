@@ -63,7 +63,7 @@ void server::init(std::vector<t_config>& list)
             p.revents = 0;
             listeners.push_back(p);
             know_exist[key] = fd;
-            servers[fd].push_back(list[i]);
+            servers[fd].push_back(list[i]);  
         }
     }  
 }
@@ -144,7 +144,6 @@ void server::run()
                     int fd = listeners[i].fd;
                     t_CgiProcess& cgi = cgis[fd_to_pid[fd]];
                     t_client& client = clients[cgi.client_fd];
-                    if (fd == cgi.in_fd) cgi.stdin_closed = true;
                     if (fd == cgi.out_fd) cgi.stdout_closed = true;
                     cleaning_cgi(fd);
                     fd_to_pid.erase(fd);
@@ -152,8 +151,6 @@ void server::run()
                 }
                 else if(listeners[i].revents & (POLLIN | POLLHUP))
                     handle_cgi_read(listeners[i].fd);
-                else if(listeners[i].revents & POLLOUT)
-                    handle_cgi_write(listeners[i].fd);
                 continue;
             } 
 		}

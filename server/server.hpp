@@ -114,7 +114,6 @@ public:
     void handle_client_write(int fd);
     void cleaning_client(std::map<int, t_client>::iterator it);
     void start_cgi(t_client& client, std::string cgi_handler);
-    void handle_cgi_write(int fd);
     void handle_cgi_read(int fd);
     void cleaning_cgi(int fd);
     void route(t_client& client);

@@ -87,6 +87,13 @@ void server::handle_client_read(int fd)
 				return;
 			}
 			choose_server(client);
+            // HTTP/1.1 stays open unless the client sends "Connection: close";
+            // HTTP/1.0 closes unless the client sends "Connection: keep-alive".
+            // std::string conn = client.request.headers.count("Connection") ? client.request.headers["Connection"] : "";
+            // if (client.request.version == "HTTP/1.1")
+            //     client.keep_alive = (conn != "close");
+            // else
+            //     client.keep_alive = (conn == "keep-alive");
             client.inbuf.erase(client.inbuf.begin(), client.inbuf.begin() + (p + 4));
             if(client.request.method == "POST")
                 client.state = READING_BODY;
@@ -134,7 +141,7 @@ void server::handle_client_read(int fd)
                     
                     if(client.request.content_length > max_body)
                     {
-                        queue_error(client, 413);
+                        queue_error(client, 413); 
                         return;
                     }
                     client.inbuf.erase(0, p + 2 + chunk_size + 2);
