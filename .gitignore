@@ -3,6 +3,7 @@
 *.a
 *.so
 *.exe
+.clangd
 .cache/
 compile_commands.json
 webserv
