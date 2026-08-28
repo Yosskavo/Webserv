@@ -151,6 +151,7 @@ void server::handle_client_read(int fd)
             if(n >= client.request.content_length)
             {
                 client.request.body = client.inbuf.substr(0, client.request.content_length);
+                write(client.request.body_fd, client.request.body.c_str(), client.request.body.size());
                 client.inbuf.erase(0, client.request.content_length);
                 client.state = ROUTING;
             }
