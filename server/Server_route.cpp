@@ -88,6 +88,18 @@ void server::route(t_client& client)
     std::string ext = get_extention(client.request.target);
     if(loc->cgi_ext.count(ext))
     {
+        std::string target_file = loc->root_path;
+        if (target_file[target_file.size() - 1] != '/')
+            target_file += "/";
+        target_file += client.request.target.substr(loc->path.size());
+        
+        struct stat st_cgi;
+        if (stat(target_file.c_str(), &st_cgi) != 0 || S_ISDIR(st_cgi.st_mode))
+        {
+            queue_error(client, 404);
+            return;
+        }
+
         start_cgi(client, loc->cgi_ext[ext]);
         return;
     }

@@ -25,8 +25,7 @@ void server::choose_server(t_client &client)
         }
     }
     client.request.server = client.server;
-    // no matching Host → keep the default server
-	if (client.request.server_name.empty())
+	if (client.server->server_name.empty())
 		client.request.server_name = "";
 	else
 		client.request.server_name = client.server->server_name[0];
