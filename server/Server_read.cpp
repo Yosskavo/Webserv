@@ -61,18 +61,11 @@ void server::handle_client_read(int fd)
 {
     char buffer[1024];
     int n = recv(fd, buffer, sizeof(buffer), 0);
-    if(n < 0)
+    if(n < 0 || n == 0)
 	{
-		if(errno == EAGAIN || errno == EWOULDBLOCK)
-			return;
 		clients[fd].state = DEAD;
 		return;
 	}
-    if(n == 0)
-    {
-        clients[fd].state = DEAD;
-        return;
-    }
     t_client& client = clients[fd];
     client.inbuf.append(buffer,n);
     if(client.state == READING_HEADERS)

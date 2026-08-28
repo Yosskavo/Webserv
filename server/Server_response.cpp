@@ -165,10 +165,8 @@ void server::handle_client_write(int fd)
 {
     t_client& client = clients[fd];
     ssize_t n = write(fd, client.response.outbuf.c_str() + client.response.bytes_sent, client.response.outbuf.size() - client.response.bytes_sent);
-    if(n < 0)
+    if(n < 0 || n == 0)
     {
-        if(errno == EAGAIN || errno == EWOULDBLOCK)
-            return;
         clients[fd].state = DEAD;
         return;
     }
