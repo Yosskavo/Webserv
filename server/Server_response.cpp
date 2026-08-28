@@ -104,11 +104,7 @@ void server::queue_error(t_client& client, int code)
     std::string path;
     if(client.server->error_pages.count(code))
     {
-        if(client.location)
-            path = client.location->root_path + client.server->error_pages[code];
-        else
-            path = client.server->root_path + client.server->error_pages[code];
-        
+        path = client.server->root_path + client.server->error_pages[code];
         serve_file(client, path, code);
         return;
     }
