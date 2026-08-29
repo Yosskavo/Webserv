@@ -89,7 +89,6 @@ char **build_env(t_client& client)
 	if (target[target.size() - 1] != '/')
 		target += "/";
     target += client.request.target.substr(client.location->path.size());
-    // std::cout << "target cgi env " + target << std::endl;
     envs.push_back("SCRIPT_FILENAME=" + target);
     envs.push_back("SCRIPT_NAME=" + client.request.target);
     envs.push_back("PATH_INFO=" + client.request.target);
