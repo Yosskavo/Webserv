@@ -18,7 +18,7 @@ int main(int ac, char **av)
 	catch (const std::exception &e)
 	{
 		std::cout << e.what() << std::endl;
-		exit_status = 1;
+		return 1;
 	}
 	server server;
 	server.init(config);
