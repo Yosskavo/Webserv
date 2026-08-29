@@ -6,6 +6,9 @@ void server::handle_delete(t_client& client)
     std::string relative = client.request.target.substr(client.location->path.size());
     std::string root_location =  client.location->root_path;
     std::string file = root_location + "/" + relative;
+    size_t pos;
+    while((pos = file.find("//")) != std::string::npos)
+        file.replace(pos, 2, "/");
     if(stat(file.c_str(), &st) == -1)
     {
         queue_error(client, 404);
@@ -42,7 +45,9 @@ void server::handle_post(t_client& client)
 {
     std::string relative = client.request.target.substr(client.location->path.size());
     std::string file_path = client.location->root_path  + "/" + relative;
-
+    size_t pos;
+    while((pos = file_path.find("//")) != std::string::npos)
+        file_path.replace(pos, 2, "/");
     struct stat st;
     if (stat(file_path.c_str(), &st) == 0)
     {

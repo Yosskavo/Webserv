@@ -30,8 +30,7 @@ t_location* choose_location(t_config* server, std::string target)
     for(size_t i = 0; i < server->location.size(); i++)
     {
         std::string path = server->location[i].path;
-        if(target.find(path) != 0)
-            continue;
+        
         bool exact_same = (target == path);
         bool target_end_slash = false;
         if(target.length() > path.length())
@@ -40,6 +39,18 @@ t_location* choose_location(t_config* server, std::string target)
         if(path.length() > 0)
             path_end_slash = (path[path.length() - 1] == '/'); 
 
+        if(target.find(path) != 0)
+        {
+            if (path_end_slash && target + "/" == path)
+            {
+                if (path.length() > long_loc)
+                {
+                    best_loc = &server->location[i];
+                    long_loc = path.length();
+                }
+            }
+            continue;
+        }
         if(!target_end_slash && !path_end_slash && !exact_same)
             continue;
         if( path.length() != 0 && long_loc < path.length())
@@ -53,17 +64,6 @@ t_location* choose_location(t_config* server, std::string target)
 
 void server::route(t_client& client)
 {
-    struct stat st;
-    std::string file_path = client.server->root_path + client.request.target;
-
-    if (stat(file_path.c_str(), &st) == 0 && S_ISDIR(st.st_mode))
-    {
-        if (client.request.target[client.request.target.size() - 1] != '/')
-        {
-            queue_redirect(client, client.request.target + "/", 301);
-            return;
-        }
-    }  
     t_config* srv = client.request.server;
     t_location* loc = choose_location(srv, client.request.target);
     if(loc == NULL)

@@ -63,6 +63,9 @@ bool server::get_index(t_client& client)
     struct stat st;
     std::string relative = client.request.target.substr(client.location->path.size());
     std::string current_dir = client.location->root_path + "/" + relative;
+    size_t pos;
+    while((pos = current_dir.find("//")) != std::string::npos)
+        current_dir.replace(pos, 2, "/");
     for(size_t i = 0; i < client.location->index.size(); i++)
     {
         std::string file = current_dir + "/" + client.location->index[i];
@@ -100,6 +103,9 @@ void server::handle_get(t_client& client)
     std::string file_path;
     std::string relative = client.request.target.substr(client.location->path.size());
     file_path =  client.location->root_path + "/" + relative;
+    size_t pos;
+    while((pos = file_path.find("//")) != std::string::npos)
+        file_path.replace(pos, 2, "/");
     if(stat(file_path.c_str(), &file_stat) < 0)
     {
         queue_error(client, 404);
