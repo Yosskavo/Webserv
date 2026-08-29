@@ -41,10 +41,8 @@ void server::handle_delete(t_client& client)
 void server::handle_post(t_client& client)
 {
     std::string relative = client.request.target.substr(client.location->path.size());
-    //if location->root.empty
     std::string file_path = client.location->root_path  + "/" + relative;
-    //else
-    //std::string file_path = client.location->root_path; //always check the /
+
     struct stat st;
     if (stat(file_path.c_str(), &st) == 0)
     {
