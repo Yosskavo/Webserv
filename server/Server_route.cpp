@@ -64,6 +64,18 @@ t_location* choose_location(t_config* server, std::string target)
 
 void server::route(t_client& client)
 {
+    struct stat st;
+    std::string file_path = client.server->root_path + client.request.target;
+
+
+    if (stat(file_path.c_str(), &st) == 0 && S_ISDIR(st.st_mode))
+    {
+        if (client.request.target[client.request.target.size() - 1] != '/')
+        {
+            queue_redirect(client, client.request.target + "/", 301);
+            return;
+        }
+    }  
     t_config* srv = client.request.server;
     t_location* loc = choose_location(srv, client.request.target);
     if(loc == NULL)
