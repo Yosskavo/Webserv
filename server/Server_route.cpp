@@ -67,7 +67,6 @@ void server::route(t_client& client)
     struct stat st;
     std::string file_path = client.server->root_path + client.request.target;
 
-
     if (stat(file_path.c_str(), &st) == 0 && S_ISDIR(st.st_mode))
     {
         if (client.request.target[client.request.target.size() - 1] != '/')
