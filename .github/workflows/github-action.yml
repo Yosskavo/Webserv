@@ -15,7 +15,8 @@ jobs:
       - name: Making the repo
         run : make
       - name: runing the webserv
-        run: ./webserv config/site.conf & ; sleep 2
+        run: ./webserv config/site.conf & 
+              sleep 2
       - name: Curling the webserv
         run: curl -i http://localhost:8080
       - name: killing the process
