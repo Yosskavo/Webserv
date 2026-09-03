@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Installing the dependency
-        run : sudo apt -y install clang make build-essential curl
+        run : sudo apt -y install clang make build-essential curl zsh
       - name: checkout (or pull) the repo
         uses: actions/checkout@v4
       - name: Making the repo
