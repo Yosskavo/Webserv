@@ -9,15 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Installing the dependency
-        run : sudo apt -y install clang make build-essential curl zsh
+        run : |
+              sudo apt update
+              sudo apt -y install clang make build-essential curl zsh
       - name: checkout (or pull) the repo
         uses: actions/checkout@v4
       - name: Making the repo
         run : make
       - name: runing the webserv
-        run: ./webserv config/site.conf & 
+        run: |
+              ./webserv config/site.conf & 
               sleep 2
       - name: Curling the webserv
         run: curl -i http://localhost:8080
-      - name: killing the process
-        run: pkill webserv
